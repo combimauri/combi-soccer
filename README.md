@@ -1,59 +1,87 @@
-# CombiSoccer
+# Quiniela Mundial ⚽
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.15.
+A World Cup 2026 score-prediction game. Predict the scoreline of each match,
+place your bet before kickoff, and climb the per-match and global leaderboards.
+Bilingual (English / Spanish), server-rendered, and live-updating.
 
-## Development server
+**Live:** https://futbol.combimauri.com
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
-```
+## How it works
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Betting window** — a match opens for betting **24 hours before** kickoff and
+  closes **10 minutes before** it starts. The window is enforced server-side by
+  Postgres row-level-security; the UI only mirrors it.
+- **Scoring** — points are awarded once a match finishes:
+  | Result | Points |
+  | --- | --- |
+  | Correct outcome (home / draw / away) | +3 |
+  | Exact scoreline | +5 (→ **8** total with the outcome) |
+  | Each correctly predicted team goal (when not exact) | +1 |
+- **Tiebreak** — on the per-match board, ties are broken by the *effective bet
+  time*: the moment you last edited your prediction, or your first placement if
+  you never edited it.
+- **Live matches** — scores, the current minute, and goal events refresh in real
+  time via Supabase Realtime.
 
-## Code scaffolding
+## Tech stack
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- **[Angular 21](https://angular.dev)** — standalone components, signals, native
+  control flow, `OnPush` change detection, server-side rendering (SSR).
+- **[Tailwind CSS v4](https://tailwindcss.com)** — wired through PostCSS, no
+  config file; design tokens live in `src/styles.css`.
+- **[Supabase](https://supabase.com)** — Postgres, row-level security, auth
+  (Google OAuth + magic link), Realtime, and edge functions for match scoring.
+- **[Transloco](https://jsverse.github.io/transloco/)** — runtime EN/ES i18n.
+- **[Vercel](https://vercel.com)** — hosts the Angular SSR server as a serverless
+  function (`api/index.mjs` + `vercel.json`).
 
-```bash
-ng generate component component-name
-```
+## Getting started
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+> Requires Node.js 20+ and npm.
 
 ```bash
-ng e2e
+npm install
+npm start          # dev server with SSR at http://localhost:4200
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Supabase connection config lives in `src/environments/environment.ts`. The key
+there is the **publishable** client key — safe to ship in the browser; access is
+gated entirely by row-level-security policies. The `service_role` key and other
+secrets are never committed (they live in Vercel / Supabase environment vars).
 
-## Additional Resources
+## Scripts
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+| Command | Description |
+| --- | --- |
+| `npm start` | Dev server (SSR) at `http://localhost:4200` |
+| `npm run build` | Production build to `dist/` (SSR output) |
+| `npm run watch` | Rebuild on change (development config) |
+| `npm test` | Unit tests (Vitest via `@angular/build:unit-test`) |
+| `npm run serve:ssr:combi-soccer` | Run the built SSR server from `dist/` |
+
+Formatting is handled by Prettier: `npx prettier --write <files>`.
+
+## Project structure
+
+```
+src/
+  app/
+    core/          # services, models, guards, Supabase client + DB types
+    features/      # auth, betting, matches, leaderboard, instructions
+    shared/        # reusable pipes and UI (language switcher, etc.)
+    i18n/          # Transloco setup + en/es message catalogs
+  environments/    # Supabase URL + publishable key
+api/index.mjs      # Vercel serverless entry that hosts the Angular SSR handler
+vercel.json        # Vercel routing → SSR function
+```
+
+- **Routing is split** between client routes (`app.routes.ts`) and per-path SSR
+  render modes (`app.routes.server.ts`).
+- **Config is split** between the browser app config (`app.config.ts`) and
+  server-only providers (`app.config.server.ts`).
+
+## License
+
+Personal project — all rights reserved.
