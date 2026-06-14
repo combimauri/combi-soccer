@@ -1,10 +1,22 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { App } from './app';
+import { en } from './i18n/en';
+import { es } from './i18n/es';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [
+        App,
+        TranslocoTestingModule.forRoot({
+          langs: { en, es },
+          translocoConfig: { availableLangs: ['en', 'es'], defaultLang: 'en' },
+          preloadLangs: true,
+        }),
+      ],
+      providers: [provideRouter([])],
     }).compileComponents();
   });
 
@@ -14,10 +26,13 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should render the brand', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
+    fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, combi-soccer');
+    expect(compiled.querySelector('header')?.textContent).toContain(
+      'Quiniela Mundial',
+    );
   });
 });

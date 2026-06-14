@@ -42,3 +42,9 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+.vercel
+
+# Secrets — never commit real keys (service_role, ADMIN_SECRET, etc.)
+.env
+.env.*
+!.env.example

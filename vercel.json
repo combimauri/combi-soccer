@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.mjs": {
+      "includeFiles": "dist/combi-soccer/**"
+    }
+  },
+  "routes": [
+    { "src": "/", "dest": "/api" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api" }
+  ]
+}

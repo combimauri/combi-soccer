@@ -1,12 +1,43 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+} from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { toSignal } from '@angular/core/rxjs-interop';
+
+import { AuthStatus } from './features/auth/auth-status/auth-status';
+import { LanguageSwitcher } from './shared/language-switcher/language-switcher';
 
 @Component({
   selector: 'combi-root',
-  imports: [RouterOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    AuthStatus,
+    LanguageSwitcher,
+    TranslocoPipe,
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('combi-soccer');
+  private readonly document = inject(DOCUMENT);
+  private readonly transloco = inject(TranslocoService);
+
+  private readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
+
+  constructor() {
+    // Keep <html lang> in sync — set during SSR and on every language switch.
+    effect(() => {
+      this.document.documentElement.lang = this.activeLang();
+    });
+  }
 }

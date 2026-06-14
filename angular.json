@@ -30,7 +30,7 @@
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {
-              "allowedHosts": []
+              "allowedHosts": ["*.vercel.app", "futbol.combimauri.com"]
             },
             "ssr": {
               "entry": "src/server.ts"
