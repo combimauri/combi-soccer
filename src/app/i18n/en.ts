@@ -19,6 +19,12 @@ export const en = {
     historyTitle: 'Your history',
     historySubtitle: 'Your past predictions — tap a match to see details and its leaderboard.',
   },
+  search: {
+    label: 'Search matches by team',
+    placeholder: 'Search by team…',
+    clear: 'Clear search',
+    noResults: 'No matches found for “{{ query }}”.',
+  },
   auth: {
     greeting: 'Hi, {{ username }}',
     signOut: 'Sign out',

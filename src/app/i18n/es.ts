@@ -19,6 +19,12 @@ export const es = {
     historyTitle: 'Tu historial',
     historySubtitle: 'Tus pronósticos anteriores — toca un partido para ver detalles y su clasificación.',
   },
+  search: {
+    label: 'Buscar partidos por equipo',
+    placeholder: 'Buscar por equipo…',
+    clear: 'Borrar búsqueda',
+    noResults: 'No se encontraron partidos para «{{ query }}».',
+  },
   auth: {
     greeting: 'Hola, {{ username }}',
     signOut: 'Cerrar sesión',

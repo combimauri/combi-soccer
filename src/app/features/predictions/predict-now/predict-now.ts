@@ -7,14 +7,17 @@ import {
   PendingTasks,
   computed,
   inject,
+  signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { MatchService } from '../../../core/services/match.service';
+import { MatchSearchService } from '../../../core/services/match-search.service';
 import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCard } from '../../matches/match-card/match-card';
 import { PredictionDialog } from '../prediction-dialog/prediction-dialog';
+import { SearchField } from '../../../shared/search-field/search-field';
 
 /**
  * Default view: matches in play right now (live score, refreshed) and matches
@@ -24,7 +27,7 @@ import { PredictionDialog } from '../prediction-dialog/prediction-dialog';
 @Component({
   selector: 'combi-predict-now',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatchCard, PredictionDialog, TranslocoPipe],
+  imports: [MatchCard, PredictionDialog, SearchField, TranslocoPipe],
   template: `
     <div class="mb-6">
       <h1 class="font-display text-3xl font-bold tracking-tight">{{ 'predict.title' | transloco }}</h1>
@@ -81,15 +84,30 @@ import { PredictionDialog } from '../prediction-dialog/prediction-dialog';
             {{ 'predict.historyTitle' | transloco }}
           </h2>
           <p class="mb-3 text-xs text-slate-500">{{ 'predict.historySubtitle' | transloco }}</p>
-          <div class="grid gap-3 sm:grid-cols-2">
-            @for (match of past; track match.id) {
-              <combi-match-card
-                [match]="match"
-                [prediction]="predictions.byMatch().get(match.id) ?? null"
-                (predict)="predictionDialog.open($event)"
-              />
+          <combi-search-field
+            class="mb-3 block"
+            [label]="'search.label' | transloco"
+            [placeholder]="'search.placeholder' | transloco"
+            [value]="query()"
+            (valueChange)="query.set($event)"
+          />
+          @if (filteredHistory(); as results) {
+            @if (results.length) {
+              <div class="grid gap-3 sm:grid-cols-2">
+                @for (match of results; track match.id) {
+                  <combi-match-card
+                    [match]="match"
+                    [prediction]="predictions.byMatch().get(match.id) ?? null"
+                    (predict)="predictionDialog.open($event)"
+                  />
+                }
+              </div>
+            } @else {
+              <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
+                {{ 'search.noResults' | transloco: { query: query() } }}
+              </p>
             }
-          </div>
+          }
         </section>
       }
     }
@@ -100,7 +118,10 @@ import { PredictionDialog } from '../prediction-dialog/prediction-dialog';
 export class PredictNow implements OnInit, OnDestroy {
   protected readonly matchService = inject(MatchService);
   protected readonly predictions = inject(PredictionService);
+  private readonly search = inject(MatchSearchService);
   private readonly pendingTasks = inject(PendingTasks);
+
+  protected readonly query = signal('');
 
   /** Finished matches the user predicted — most recent first. */
   protected readonly history = computed(() =>
@@ -109,6 +130,13 @@ export class PredictNow implements OnInit, OnDestroy {
       .filter((m) => m.status === 'finished' && this.predictions.byMatch().has(m.id))
       .sort((a, b) => b.start_time.localeCompare(a.start_time)),
   );
+
+  /** {@link history} narrowed to the search query (by team name). */
+  protected readonly filteredHistory = computed(() => {
+    this.search.lang(); // re-run when the active language changes
+    const q = this.query();
+    return this.history().filter((m) => this.search.matches(m, q));
+  });
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private tickTimer: ReturnType<typeof setInterval> | undefined;
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
