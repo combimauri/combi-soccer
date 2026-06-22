@@ -13,14 +13,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { MatchService } from '../../../core/services/match.service';
+import { MatchService, groupByStage } from '../../../core/services/match.service';
 import { MatchSearchService } from '../../../core/services/match-search.service';
 import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCard } from '../match-card/match-card';
 import { PredictionDialog } from '../../predictions/prediction-dialog/prediction-dialog';
 import { SearchField } from '../../../shared/search-field/search-field';
 import { InfiniteScroll } from '../../../shared/infinite-scroll/infinite-scroll';
-import { paginate } from '../../../shared/infinite-scroll/paginate';
 
 @Component({
   selector: 'combi-match-list',
@@ -40,7 +39,7 @@ import { paginate } from '../../../shared/infinite-scroll/paginate';
       (valueChange)="query.set($event)"
     />
 
-    @for (group of groupsPage.items(); track group.stage) {
+    @for (group of displayGroups(); track group.stage) {
       <section class="mb-8">
         <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
           {{ 'stages.' + group.stage | transloco }}
@@ -56,16 +55,19 @@ import { paginate } from '../../../shared/infinite-scroll/paginate';
         </div>
       </section>
     } @empty {
-      @if (query().trim()) {
-        <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
-          {{ 'search.noResults' | transloco: { query: query() } }}
-        </p>
+      @if (searching()) {
+        @if (!searchMatches.isLoading()) {
+          <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
+            {{ 'search.noResults' | transloco: { query: query() } }}
+          </p>
+        }
       } @else {
         <p class="text-slate-500">{{ 'matches.empty' | transloco }}</p>
       }
     }
-    @if (groupsPage.hasMore()) {
-      <div combiInfiniteScroll (reached)="groupsPage.more()" aria-hidden="true" class="h-px"></div>
+
+    @if (!searching() && matchService.hasMore()) {
+      <div combiInfiniteScroll (reached)="matchService.loadMore()" aria-hidden="true" class="h-px"></div>
     }
 
     <combi-prediction-dialog #predictionDialog />
@@ -78,29 +80,23 @@ export class MatchList implements OnInit, OnDestroy {
   private readonly pendingTasks = inject(PendingTasks);
 
   protected readonly query = signal('');
-  /** Server-resolved ids matching the query (null = no active search). */
-  private readonly searchIds = this.search.resultIds(this.query);
+  /** Matches matching the search (null while the query is blank). */
+  protected readonly searchMatches = this.search.searchMatches(this.query);
 
-  /** Stage groups filtered by the search result; groups with no hits drop out. */
-  protected readonly filteredGroups = computed(() => {
-    const ids = this.searchIds.value();
-    const groups = this.matchService.grouped();
-    if (!ids) return groups;
-    return groups
-      .map((group) => ({
-        stage: group.stage,
-        matches: group.matches.filter((m) => ids.has(m.id)),
-      }))
-      .filter((group) => group.matches.length > 0);
-  });
+  protected readonly searching = computed(() => !!this.query().trim());
 
-  /** Reveal stage groups a few at a time as the user scrolls. */
-  protected readonly groupsPage = paginate(this.filteredGroups, 4);
+  /** Search results (fetched in full) when searching; otherwise the paginated browse list. */
+  protected readonly displayGroups = computed(() =>
+    this.searching()
+      ? groupByStage(this.searchMatches.value() ?? [])
+      : this.matchService.grouped(),
+  );
+
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private timer: ReturnType<typeof setInterval> | undefined;
 
   ngOnInit(): void {
-    // Tracked so SSR waits for the data before snapshotting the HTML.
+    // Tracked so SSR waits for the first page before snapshotting the HTML.
     void this.pendingTasks.run(() => this.matchService.load());
     if (this.isBrowser) {
       this.matchService.subscribeLive();

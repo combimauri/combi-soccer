@@ -13,11 +13,11 @@ import {
   MatchRow,
   MatchStage,
   MatchView,
-  Team,
+  MatchWithTeams,
   derivePredictionState,
 } from '../models/models';
 
-/** Display order: Groups A–H first, then knockout rounds. */
+/** Display order: Groups A–L first, then knockout rounds. */
 const STAGE_ORDER: MatchStage[] = [
   'group_a', 'group_b', 'group_c', 'group_d',
   'group_e', 'group_f', 'group_g', 'group_h',
@@ -26,16 +26,36 @@ const STAGE_ORDER: MatchStage[] = [
   'semi_final', 'third_place', 'final',
 ];
 
-interface MatchWithTeams extends MatchRow {
-  home: Team | null;
-  away: Team | null;
-}
+/** Matches per page (a multiple of the 6-per-group size so group-stage pages align). */
+const PAGE_SIZE = 24;
 
 export interface StageGroup {
   stage: MatchStage;
   matches: MatchView[];
 }
 
+const SELECT = '*, home:home_team_id(*), away:away_team_id(*)';
+
+/** Group matches by stage in display order, each group sorted chronologically. */
+export function groupByStage(matches: readonly MatchView[]): StageGroup[] {
+  const byStage = new Map<MatchStage, MatchView[]>();
+  for (const match of matches) {
+    (byStage.get(match.stage) ?? byStage.set(match.stage, []).get(match.stage)!).push(match);
+  }
+  return STAGE_ORDER.filter((stage) => byStage.has(stage)).map((stage) => ({
+    stage,
+    matches: byStage
+      .get(stage)!
+      .sort((a, b) => a.start_time.localeCompare(b.start_time)),
+  }));
+}
+
+/**
+ * Source for the "All matches" list. Matches are fetched a page at a time in
+ * stage then kickoff order and appended as the user scrolls, so the full
+ * fixture list is never loaded up front. Rows accumulate and are grouped by
+ * stage on the client.
+ */
 @Injectable({ providedIn: 'root' })
 export class MatchService {
   private readonly sb = inject(SUPABASE_CLIENT);
@@ -44,9 +64,11 @@ export class MatchService {
   /** Re-evaluated every tick so prediction state stays current without a refetch. */
   private readonly now = signal(Date.now());
   private readonly rows = signal<MatchWithTeams[]>([]);
+  private readonly _loading = signal(false);
+  readonly hasMore = signal(true);
   private channel: RealtimeChannel | null = null;
 
-  /** All matches as view models, chronological, with live prediction state. */
+  /** Loaded matches as view models with live prediction state. */
   readonly matches = computed<MatchView[]>(() => {
     const now = this.now();
     return this.rows().map((row) => ({
@@ -55,50 +77,58 @@ export class MatchService {
     }));
   });
 
-  /** Grouped Group Stage A–H then knockout, each chronologically sorted. */
-  readonly grouped = computed<StageGroup[]>(() => {
-    const byStage = new Map<MatchStage, MatchView[]>();
-    for (const match of this.matches()) {
-      (byStage.get(match.stage) ?? byStage.set(match.stage, []).get(match.stage)!).push(match);
-    }
-    return STAGE_ORDER.filter((stage) => byStage.has(stage)).map((stage) => ({
-      stage,
-      matches: byStage
-        .get(stage)!
-        .sort((a, b) => a.start_time.localeCompare(b.start_time)),
-    }));
-  });
-
-  readonly openForPredictions = computed(() =>
-    this.matches().filter((m) => m.predictionState === 'open'),
-  );
-
-  /** Matches currently in play (API-verified live status), earliest first. */
-  readonly liveMatches = computed(() =>
-    this.matches()
-      .filter((m) => m.status === 'live')
-      .sort((a, b) => a.start_time.localeCompare(b.start_time)),
-  );
+  /** Loaded matches grouped by stage in display order, each chronological. */
+  readonly grouped = computed<StageGroup[]>(() => groupByStage(this.matches()));
 
   /** Advance the internal clock; call from a component timer (browser only). */
   tick(): void {
     this.now.set(Date.now());
   }
 
-  async load(): Promise<void> {
-    const { data, error } = await this.sb
+  private page(from: number, to: number) {
+    return this.sb
       .from('matches')
-      .select('*, home:home_team_id(*), away:away_team_id(*)')
-      .order('start_time');
-    if (error) throw error;
-    this.rows.set((data ?? []) as unknown as MatchWithTeams[]);
+      .select(SELECT)
+      .order('stage')
+      .order('start_time')
+      .range(from, to);
+  }
+
+  /** Load (or reload) the first page. */
+  async load(): Promise<void> {
+    this._loading.set(true);
+    try {
+      const { data, error } = await this.page(0, PAGE_SIZE - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as MatchWithTeams[];
+      this.rows.set(rows);
+      this.hasMore.set(rows.length === PAGE_SIZE);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /** Append the next page; no-op while loading or when nothing remains. */
+  async loadMore(): Promise<void> {
+    if (this._loading() || !this.hasMore()) return;
+    this._loading.set(true);
+    try {
+      const from = this.rows().length;
+      const { data, error } = await this.page(from, from + PAGE_SIZE - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as MatchWithTeams[];
+      this.rows.update((current) => [...current, ...rows]);
+      this.hasMore.set(rows.length === PAGE_SIZE);
+    } finally {
+      this._loading.set(false);
+    }
   }
 
   /** Fetch a single match (with teams) for the detail page. */
   async getMatch(id: number): Promise<MatchView | null> {
     const { data, error } = await this.sb
       .from('matches')
-      .select('*, home:home_team_id(*), away:away_team_id(*)')
+      .select(SELECT)
       .eq('id', id)
       .maybeSingle();
     if (error) throw error;
@@ -107,7 +137,7 @@ export class MatchService {
     return { ...row, predictionState: derivePredictionState(row, Date.now()) };
   }
 
-  /** Subscribe to live match UPDATEs (scores/status). Browser only. */
+  /** Subscribe to live match UPDATEs (scores/status) for already-loaded rows. */
   subscribeLive(): void {
     if (!this.isBrowser || this.channel) return;
     this.channel = this.sb
@@ -115,7 +145,7 @@ export class MatchService {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'matches' },
-        ({ new: row }) => this.upsert(row as MatchRow),
+        ({ new: row }) => this.applyUpdate(row as MatchRow),
       )
       .subscribe();
   }
@@ -127,11 +157,13 @@ export class MatchService {
     }
   }
 
-  /** Merge a realtime row, preserving the already-joined team objects. */
-  private upsert(row: MatchRow): void {
+  /** Merge a realtime row into the loaded set, preserving the joined teams.
+   * Updates that target an as-yet-unloaded match are ignored — they arrive
+   * fresh when that page is fetched. */
+  private applyUpdate(row: MatchRow): void {
     this.rows.update((list) => {
       const index = list.findIndex((m) => m.id === row.id);
-      if (index === -1) return [...list, { ...row, home: null, away: null }];
+      if (index === -1) return list;
       return list.map((m, i) => (i === index ? { ...m, ...row } : m));
     });
   }

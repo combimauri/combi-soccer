@@ -12,19 +12,20 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { MatchService } from '../../../core/services/match.service';
+import { MatchView } from '../../../core/models/models';
+import { PredictNowService } from '../../../core/services/predict-now.service';
 import { MatchSearchService } from '../../../core/services/match-search.service';
 import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCard } from '../../matches/match-card/match-card';
 import { PredictionDialog } from '../prediction-dialog/prediction-dialog';
 import { SearchField } from '../../../shared/search-field/search-field';
 import { InfiniteScroll } from '../../../shared/infinite-scroll/infinite-scroll';
-import { paginate } from '../../../shared/infinite-scroll/paginate';
 
 /**
  * Default view: matches in play right now (live score, refreshed) and matches
  * whose prediction window is open, each showing the signed-in user's prediction
- * so they can make/edit it or track it live in one place.
+ * so they can make/edit it or track it live in one place. Data is fetched as
+ * targeted queries (live / open / paginated history) rather than the whole list.
  */
 @Component({
   selector: 'combi-predict-now',
@@ -36,7 +37,7 @@ import { paginate } from '../../../shared/infinite-scroll/paginate';
       <p class="text-sm text-slate-600">{{ 'predict.subtitle' | transloco }}</p>
     </div>
 
-    @if (matchService.liveMatches(); as live) {
+    @if (predictNow.liveMatches(); as live) {
       @if (live.length) {
         <section class="mb-8">
           <h2 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
@@ -60,109 +61,97 @@ import { paginate } from '../../../shared/infinite-scroll/paginate';
       <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
         {{ 'predict.openTitle' | transloco }}
       </h2>
-      @if (matchService.openForPredictions().length) {
-        <div class="grid gap-3 sm:grid-cols-2">
-          @for (match of openPage.items(); track match.id) {
-            <combi-match-card
-              [match]="match"
-              [prediction]="predictions.byMatch().get(match.id) ?? null"
-              (predict)="predictionDialog.open($event)"
-            />
-          }
-        </div>
-        @if (openPage.hasMore()) {
-          <div combiInfiniteScroll (reached)="openPage.more()" aria-hidden="true" class="h-px"></div>
+      @if (predictNow.openForPredictions(); as open) {
+        @if (open.length) {
+          <div class="grid gap-3 sm:grid-cols-2">
+            @for (match of open; track match.id) {
+              <combi-match-card
+                [match]="match"
+                [prediction]="predictions.byMatch().get(match.id) ?? null"
+                (predict)="predictionDialog.open($event)"
+              />
+            }
+          </div>
+        } @else {
+          <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
+            {{ 'predict.empty' | transloco }}
+          </p>
         }
-      } @else {
-        <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
-          {{ 'predict.empty' | transloco }}
-        </p>
       }
     </section>
 
-    @if (history(); as past) {
-      @if (past.length) {
-        <section class="mt-10">
-          <h2 class="mb-1 text-sm font-bold uppercase tracking-wide text-slate-500">
-            {{ 'predict.historyTitle' | transloco }}
-          </h2>
-          <p class="mb-3 text-xs text-slate-500">{{ 'predict.historySubtitle' | transloco }}</p>
-          <combi-search-field
-            class="mb-3 block"
-            [label]="'search.label' | transloco"
-            [placeholder]="'search.placeholder' | transloco"
-            [value]="query()"
-            (valueChange)="query.set($event)"
-          />
-          @if (filteredHistory(); as results) {
-            @if (results.length) {
-              <div class="grid gap-3 sm:grid-cols-2">
-                @for (match of historyPage.items(); track match.id) {
-                  <combi-match-card
-                    [match]="match"
-                    [prediction]="predictions.byMatch().get(match.id) ?? null"
-                    (predict)="predictionDialog.open($event)"
-                  />
-                }
-              </div>
-              @if (historyPage.hasMore()) {
-                <div combiInfiniteScroll (reached)="historyPage.more()" aria-hidden="true" class="h-px"></div>
+    @if (predictNow.history().length) {
+      <section class="mt-10">
+        <h2 class="mb-1 text-sm font-bold uppercase tracking-wide text-slate-500">
+          {{ 'predict.historyTitle' | transloco }}
+        </h2>
+        <p class="mb-3 text-xs text-slate-500">{{ 'predict.historySubtitle' | transloco }}</p>
+        <combi-search-field
+          class="mb-3 block"
+          [label]="'search.label' | transloco"
+          [placeholder]="'search.placeholder' | transloco"
+          [value]="query()"
+          (valueChange)="query.set($event)"
+        />
+        @if (historyResults(); as results) {
+          @if (results.length) {
+            <div class="grid gap-3 sm:grid-cols-2">
+              @for (match of results; track match.id) {
+                <combi-match-card
+                  [match]="match"
+                  [prediction]="predictions.byMatch().get(match.id) ?? null"
+                  (predict)="predictionDialog.open($event)"
+                />
               }
-            } @else {
-              <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
-                {{ 'search.noResults' | transloco: { query: query() } }}
-              </p>
+            </div>
+            @if (!searching() && predictNow.hasMoreHistory()) {
+              <div combiInfiniteScroll (reached)="predictNow.loadMoreHistory()" aria-hidden="true" class="h-px"></div>
             }
+          } @else if (searching() && !searchMatches.isLoading()) {
+            <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
+              {{ 'search.noResults' | transloco: { query: query() } }}
+            </p>
           }
-        </section>
-      }
+        }
+      </section>
     }
 
     <combi-prediction-dialog #predictionDialog />
   `,
 })
 export class PredictNow implements OnInit, OnDestroy {
-  protected readonly matchService = inject(MatchService);
+  protected readonly predictNow = inject(PredictNowService);
   protected readonly predictions = inject(PredictionService);
   private readonly search = inject(MatchSearchService);
   private readonly pendingTasks = inject(PendingTasks);
 
   protected readonly query = signal('');
-  /** Server-resolved ids matching the query (null = no active search). */
-  private readonly searchIds = this.search.resultIds(this.query);
+  /** Matched matches when searching history (null while the query is blank). */
+  protected readonly searchMatches = this.search.searchMatches(this.query);
+  protected readonly searching = computed(() => !!this.query().trim());
 
-  /** Finished matches the user predicted — most recent first. */
-  protected readonly history = computed(() =>
-    this.matchService
-      .matches()
-      .filter((m) => m.status === 'finished' && this.predictions.byMatch().has(m.id))
-      .sort((a, b) => b.start_time.localeCompare(a.start_time)),
-  );
-
-  /** {@link history} narrowed to the search result (by team name). */
-  protected readonly filteredHistory = computed(() => {
-    const ids = this.searchIds.value();
-    const past = this.history();
-    return ids ? past.filter((m) => ids.has(m.id)) : past;
+  /** Paginated history when browsing; matched finished predictions when searching. */
+  protected readonly historyResults = computed<MatchView[]>(() => {
+    if (!this.searching()) return this.predictNow.history();
+    const predicted = this.predictions.byMatch();
+    return (this.searchMatches.value() ?? [])
+      .filter((m) => m.status === 'finished' && predicted.has(m.id))
+      .sort((a, b) => b.start_time.localeCompare(a.start_time));
   });
 
-  /** Reveal open matches and past predictions a page at a time as the user scrolls. */
-  protected readonly openPage = paginate(this.matchService.openForPredictions, 8);
-  protected readonly historyPage = paginate(this.filteredHistory, 8);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private tickTimer: ReturnType<typeof setInterval> | undefined;
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
 
   ngOnInit(): void {
-    void this.pendingTasks.run(() => this.matchService.load());
+    void this.pendingTasks.run(() => this.predictNow.loadActive());
     if (this.isBrowser) {
-      // Realtime pushes live score/status changes; these are belt-and-suspenders.
-      this.matchService.subscribeLive();
-      this.tickTimer = setInterval(() => this.matchService.tick(), 30_000);
-      // Re-fetch while something is in play, so live data stays fresh.
+      this.predictNow.subscribeLive();
+      this.tickTimer = setInterval(() => this.predictNow.tick(), 30_000);
+      // Refresh live/open data while something is in play.
       this.refreshTimer = setInterval(() => {
-        if (this.matchService.liveMatches().length) {
-          void this.matchService.load();
+        if (this.predictNow.liveMatches().length) {
+          void this.predictNow.loadActive();
         }
       }, 60_000);
     }
@@ -171,6 +160,6 @@ export class PredictNow implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     clearInterval(this.tickTimer);
     clearInterval(this.refreshTimer);
-    void this.matchService.unsubscribe();
+    void this.predictNow.unsubscribe();
   }
 }

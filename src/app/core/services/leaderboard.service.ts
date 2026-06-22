@@ -1,7 +1,6 @@
 import {
   Injectable,
   PLATFORM_ID,
-  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -11,41 +10,73 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../supabase/supabase';
 import { LeaderboardEntry } from '../models/models';
 
+const PAGE_SIZE = 25;
+
 /**
  * The global leaderboard: public, always visible, and updated in realtime as
- * matches are scored. No auth required.
+ * matches are scored. Rows are fetched a page at a time from the server (ordered
+ * with the tie-break baked into the query) and appended as the user scrolls, so
+ * the whole table is never loaded up front.
  */
 @Injectable({ providedIn: 'root' })
 export class LeaderboardService {
   private readonly sb = inject(SUPABASE_CLIENT);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  private readonly rows = signal<LeaderboardEntry[]>([]);
+  private readonly _rows = signal<LeaderboardEntry[]>([]);
+  /** Loaded rows, already in rank order (points → exact → outcomes). */
+  readonly ranked = this._rows.asReadonly();
+
+  private readonly _loading = signal(false);
+  readonly loading = this._loading.asReadonly();
+
+  /** Whether another page might exist beyond what's loaded. */
+  readonly hasMore = signal(true);
+
   private channel: RealtimeChannel | null = null;
 
-  /**
-   * Ranked client-side so the time-weighting tie-break is explicit:
-   * points → exact scores → correct outcomes.
-   */
-  readonly ranked = computed(() =>
-    [...this.rows()].sort(
-      (a, b) =>
-        b.total_points - a.total_points ||
-        b.exact_scores - a.exact_scores ||
-        b.correct_outcomes - a.correct_outcomes,
-    ),
-  );
-
-  async load(): Promise<void> {
-    const { data, error } = await this.sb
+  /** Fetch a slice ordered by points then the tie-breaks, so paging is stable. */
+  private page(from: number, to: number) {
+    return this.sb
       .from('leaderboard')
       .select('*, profile:user_id(username)')
-      .order('total_points', { ascending: false });
-    if (error) throw error;
-    this.rows.set((data ?? []) as unknown as LeaderboardEntry[]);
+      .order('total_points', { ascending: false })
+      .order('exact_scores', { ascending: false })
+      .order('correct_outcomes', { ascending: false })
+      .range(from, to);
   }
 
-  /** Subscribe to any leaderboard change and refetch. Browser only. */
+  /** Load (or reload) the first page. */
+  async load(): Promise<void> {
+    this._loading.set(true);
+    try {
+      const { data, error } = await this.page(0, PAGE_SIZE - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as LeaderboardEntry[];
+      this._rows.set(rows);
+      this.hasMore.set(rows.length === PAGE_SIZE);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /** Append the next page; no-op while loading or when nothing remains. */
+  async loadMore(): Promise<void> {
+    if (this._loading() || !this.hasMore()) return;
+    this._loading.set(true);
+    try {
+      const from = this._rows().length;
+      const { data, error } = await this.page(from, from + PAGE_SIZE - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as LeaderboardEntry[];
+      this._rows.update((current) => [...current, ...rows]);
+      this.hasMore.set(rows.length === PAGE_SIZE);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /** Subscribe to any leaderboard change and refresh the loaded rows in place. */
   subscribe(): void {
     if (!this.isBrowser || this.channel) return;
     this.channel = this.sb
@@ -53,9 +84,21 @@ export class LeaderboardService {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'leaderboard' },
-        () => void this.load(),
+        () => void this.refreshLoaded(),
       )
       .subscribe();
+  }
+
+  /** Re-fetch exactly the rows already on screen so live scoring updates them. */
+  private async refreshLoaded(): Promise<void> {
+    const count = this._rows().length;
+    if (!count) {
+      void this.load();
+      return;
+    }
+    const { data, error } = await this.page(0, count - 1);
+    if (error) return;
+    this._rows.set((data ?? []) as unknown as LeaderboardEntry[]);
   }
 
   async unsubscribe(): Promise<void> {

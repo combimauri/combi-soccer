@@ -12,7 +12,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { LeaderboardService } from '../../../core/services/leaderboard.service';
 import { InfiniteScroll } from '../../../shared/infinite-scroll/infinite-scroll';
-import { paginate } from '../../../shared/infinite-scroll/paginate';
 
 @Component({
   selector: 'combi-global-leaderboard',
@@ -39,7 +38,7 @@ import { paginate } from '../../../shared/infinite-scroll/paginate';
               </tr>
             </thead>
             <tbody>
-              @for (row of rowsPage.items(); track row.user_id; let i = $index) {
+              @for (row of rows; track row.user_id; let i = $index) {
                 <tr class="border-t border-slate-100" [class.bg-amber-50]="i === 0">
                   <td class="px-4 py-2.5">
                     <span
@@ -62,8 +61,8 @@ import { paginate } from '../../../shared/infinite-scroll/paginate';
             </tbody>
           </table>
         </div>
-        @if (rowsPage.hasMore()) {
-          <div combiInfiniteScroll (reached)="rowsPage.more()" aria-hidden="true" class="h-px"></div>
+        @if (leaderboard.hasMore()) {
+          <div combiInfiniteScroll (reached)="leaderboard.loadMore()" aria-hidden="true" class="h-px"></div>
         }
       } @else {
         <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
@@ -77,9 +76,6 @@ export class GlobalLeaderboard implements OnInit, OnDestroy {
   protected readonly leaderboard = inject(LeaderboardService);
   private readonly pendingTasks = inject(PendingTasks);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-
-  /** Reveal 25 players at a time as the user scrolls. */
-  protected readonly rowsPage = paginate(this.leaderboard.ranked, 25);
 
   /** Medal tint for the top three ranks; plain numerals below that. */
   protected rankChip(index: number): string {

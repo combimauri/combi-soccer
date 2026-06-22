@@ -21,10 +21,14 @@ export interface MatchGoal {
   assist: string | null;
 }
 
-/** A match row with its teams joined and prediction state derived for the UI. */
-export interface MatchView extends MatchRow {
+/** A match row with its home/away teams joined (no derived UI state yet). */
+export interface MatchWithTeams extends MatchRow {
   home: Team | null;
   away: Team | null;
+}
+
+/** A match row with its teams joined and prediction state derived for the UI. */
+export interface MatchView extends MatchWithTeams {
   predictionState: PredictionState;
 }
 
