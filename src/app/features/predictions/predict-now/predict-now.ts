@@ -122,6 +122,8 @@ export class PredictNow implements OnInit, OnDestroy {
   private readonly pendingTasks = inject(PendingTasks);
 
   protected readonly query = signal('');
+  /** Server-resolved ids matching the query (null = no active search). */
+  private readonly searchIds = this.search.resultIds(this.query);
 
   /** Finished matches the user predicted — most recent first. */
   protected readonly history = computed(() =>
@@ -131,11 +133,11 @@ export class PredictNow implements OnInit, OnDestroy {
       .sort((a, b) => b.start_time.localeCompare(a.start_time)),
   );
 
-  /** {@link history} narrowed to the search query (by team name). */
+  /** {@link history} narrowed to the search result (by team name). */
   protected readonly filteredHistory = computed(() => {
-    this.search.lang(); // re-run when the active language changes
-    const q = this.query();
-    return this.history().filter((m) => this.search.matches(m, q));
+    const ids = this.searchIds.value();
+    const past = this.history();
+    return ids ? past.filter((m) => ids.has(m.id)) : past;
   });
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private tickTimer: ReturnType<typeof setInterval> | undefined;

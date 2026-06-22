@@ -194,6 +194,8 @@ export type Database = {
           flag_url: string | null
           id: number
           name: string
+          name_en: string | null
+          name_es: string | null
         }
         Insert: {
           api_name?: string | null
@@ -201,6 +203,8 @@ export type Database = {
           flag_url?: string | null
           id?: never
           name: string
+          name_en?: string | null
+          name_es?: string | null
         }
         Update: {
           api_name?: string | null
@@ -208,6 +212,8 @@ export type Database = {
           flag_url?: string | null
           id?: never
           name?: string
+          name_en?: string | null
+          name_es?: string | null
         }
         Relationships: []
       }
@@ -247,6 +253,13 @@ export type Database = {
         Args: { p_match_id: number }
         Returns: undefined
       }
+      search_match_ids: {
+        Args: { p_lang?: string; p_query: string }
+        Returns: {
+          match_id: number
+        }[]
+      }
+      sync_matches_from_api: { Args: never; Returns: number }
     }
     Enums: {
       bet_outcome: "home" | "draw" | "away"

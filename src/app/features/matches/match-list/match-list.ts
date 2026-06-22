@@ -73,17 +73,18 @@ export class MatchList implements OnInit, OnDestroy {
   private readonly pendingTasks = inject(PendingTasks);
 
   protected readonly query = signal('');
+  /** Server-resolved ids matching the query (null = no active search). */
+  private readonly searchIds = this.search.resultIds(this.query);
 
-  /** Stage groups filtered by the search query; groups with no hits drop out. */
+  /** Stage groups filtered by the search result; groups with no hits drop out. */
   protected readonly filteredGroups = computed(() => {
-    this.search.lang(); // re-run when the active language changes
-    const q = this.query();
+    const ids = this.searchIds.value();
     const groups = this.matchService.grouped();
-    if (!q.trim()) return groups;
+    if (!ids) return groups;
     return groups
       .map((group) => ({
         stage: group.stage,
-        matches: group.matches.filter((m) => this.search.matches(m, q)),
+        matches: group.matches.filter((m) => ids.has(m.id)),
       }))
       .filter((group) => group.matches.length > 0);
   });
