@@ -6,8 +6,8 @@ import type { Session } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../supabase/supabase';
 
 /**
- * Owns the Supabase auth session as a signal. Auth is only required to place a
- * bet — browsing matches and leaderboards stays anonymous.
+ * Owns the Supabase auth session as a signal. Auth is only required to make a
+ * prediction — browsing matches and leaderboards stays anonymous.
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {

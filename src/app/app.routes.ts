@@ -3,9 +3,11 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    title: 'Bet now · Quiniela Mundial',
+    title: 'Predict now · Quiniela Mundial',
     loadComponent: () =>
-      import('./features/betting/bet-now/bet-now').then((m) => m.BetNow),
+      import('./features/predictions/predict-now/predict-now').then(
+        (m) => m.PredictNow,
+      ),
   },
   {
     path: 'matches',

@@ -12,14 +12,14 @@ import { isPlatformBrowser } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { MatchService } from '../../../core/services/match.service';
-import { BetService } from '../../../core/services/bet.service';
+import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCard } from '../match-card/match-card';
-import { BetDialog } from '../../betting/bet-dialog/bet-dialog';
+import { PredictionDialog } from '../../predictions/prediction-dialog/prediction-dialog';
 
 @Component({
   selector: 'combi-match-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatchCard, BetDialog, TranslocoPipe],
+  imports: [MatchCard, PredictionDialog, TranslocoPipe],
   template: `
     <div class="mb-6">
       <h1 class="font-display text-3xl font-bold tracking-tight">{{ 'matches.title' | transloco }}</h1>
@@ -35,8 +35,8 @@ import { BetDialog } from '../../betting/bet-dialog/bet-dialog';
           @for (match of group.matches; track match.id) {
             <combi-match-card
               [match]="match"
-              [bet]="bets.byMatch().get(match.id) ?? null"
-              (placeBet)="betDialog.open($event)"
+              [prediction]="predictions.byMatch().get(match.id) ?? null"
+              (predict)="predictionDialog.open($event)"
             />
           }
         </div>
@@ -45,12 +45,12 @@ import { BetDialog } from '../../betting/bet-dialog/bet-dialog';
       <p class="text-slate-500">{{ 'matches.empty' | transloco }}</p>
     }
 
-    <combi-bet-dialog #betDialog />
+    <combi-prediction-dialog #predictionDialog />
   `,
 })
 export class MatchList implements OnInit, OnDestroy {
   protected readonly matchService = inject(MatchService);
-  protected readonly bets = inject(BetService);
+  protected readonly predictions = inject(PredictionService);
   private readonly pendingTasks = inject(PendingTasks);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private timer: ReturnType<typeof setInterval> | undefined;
@@ -60,7 +60,7 @@ export class MatchList implements OnInit, OnDestroy {
     void this.pendingTasks.run(() => this.matchService.load());
     if (this.isBrowser) {
       this.matchService.subscribeLive();
-      // Re-evaluate betting windows every 30 s without refetching.
+      // Re-evaluate prediction windows every 30 s without refetching.
       this.timer = setInterval(() => this.matchService.tick(), 30_000);
     }
   }

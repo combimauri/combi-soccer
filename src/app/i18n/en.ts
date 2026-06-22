@@ -5,19 +5,19 @@ export const en = {
   },
   nav: {
     brand: 'Quiniela Mundial',
-    betNow: 'Bet now',
+    predictNow: 'Predict now',
     matches: 'All matches',
     leaderboard: 'Leaderboard',
     howToPlay: 'How to play',
   },
-  betNow: {
-    title: 'Bet now',
-    subtitle: 'Live matches and matches open for betting, with your predictions.',
+  predict: {
+    title: 'Predict now',
+    subtitle: 'Live matches and matches open for predictions, with your picks.',
     liveTitle: 'Live now',
-    openTitle: 'Open for betting',
-    empty: 'No matches are open for betting right now. Check back closer to kickoff.',
+    openTitle: 'Open for predictions',
+    empty: 'No matches are open for predictions right now. Check back closer to kickoff.',
     historyTitle: 'Your history',
-    historySubtitle: 'Your past bets — tap a match to see details and its leaderboard.',
+    historySubtitle: 'Your past predictions — tap a match to see details and its leaderboard.',
   },
   auth: {
     greeting: 'Hi, {{ username }}',
@@ -33,7 +33,7 @@ export const en = {
     live: 'LIVE',
     finished: 'Finished',
     cancelled: 'Cancelled',
-    open: 'Open for betting',
+    open: 'Open for predictions',
     closed: 'Closed',
     upcoming: 'Upcoming',
   },
@@ -47,15 +47,15 @@ export const en = {
   },
   matches: {
     title: 'World Cup matches',
-    subtitle: 'Matches open for betting are highlighted in green.',
+    subtitle: 'Matches open for predictions are highlighted in green.',
     empty: 'No matches scheduled yet.',
     viewDetails: 'View details',
-    placeBet: 'Place bet',
-    editBet: 'Edit bet',
-    yourBet: 'Your bet',
+    makePrediction: 'Make prediction',
+    editPrediction: 'Edit prediction',
+    yourPrediction: 'Your prediction',
     points: '{{ points }} pts',
-    opensBefore: 'Betting opens 24 h before kickoff',
-    bettingClosed: 'Betting closed',
+    opensBefore: 'Predictions open 24 h before kickoff',
+    predictionsClosed: 'Predictions closed',
   },
   stages: {
     group_a: 'Group A',
@@ -77,7 +77,7 @@ export const en = {
     third_place: 'Third-place play-off',
     final: 'Final',
   },
-  bet: {
+  prediction: {
     title: 'Your prediction',
     close: 'Close dialog',
     increase: 'Increase score',
@@ -86,9 +86,9 @@ export const en = {
     draw: 'Draw',
     win: '{{ team }} win',
     cancel: 'Cancel',
-    place: 'Place bet',
+    place: 'Save prediction',
     saving: 'Saving…',
-    errorClosed: 'Betting just closed for this match — your bet was not saved.',
+    errorClosed: 'Predictions just closed for this match — your prediction was not saved.',
     errorGeneric: 'Something went wrong. Please try again.',
   },
   leaderboard: {
@@ -111,16 +111,16 @@ export const en = {
     rank: '#',
     player: 'Player',
     points: 'Points',
-    betPlaced: 'Bet placed',
+    predictionPlaced: 'Predicted at',
     empty: 'No results yet — rankings appear once this match is scored.',
     notFound: 'Match not found.',
     winner: 'winner',
     unknown: 'Unknown',
   },
   signIn: {
-    title: 'Sign in to bet',
+    title: 'Sign in to predict',
     subtitle:
-      'You only need an account to place bets. Browsing stays open to everyone.',
+      'You only need an account to make predictions. Browsing stays open to everyone.',
     google: 'Continue with Google',
     or: 'OR',
     emailLabel: 'Email magic link',
@@ -144,10 +144,10 @@ export const en = {
   },
   howto: {
     title: 'How to play',
-    whenTitle: 'When can I bet?',
-    when1: 'Betting <strong>opens 24 hours before</strong> kickoff.',
+    whenTitle: 'When can I predict?',
+    when1: 'Predictions <strong>open 24 hours before</strong> kickoff.',
     when2:
-      'Betting <strong>closes 10 minutes before</strong> kickoff.',
+      'Predictions <strong>close 10 minutes before</strong> kickoff.',
     when3: 'You can edit your prediction freely while the window is open.',
     predictionTitle: 'Your prediction',
     prediction:
@@ -159,7 +159,7 @@ export const en = {
     scorePartial: 'Each correct team goal count (if not exact)',
     tiebreakTitle: 'Tie-breaks & winning',
     tiebreak:
-      'If two players predict equally well, the one who placed their bet <strong>earlier</strong> ranks higher. The player with the most points at the end of the World Cup wins overall.',
+      'If two players predict equally well, the one who made their prediction <strong>earlier</strong> ranks higher. The player with the most points at the end of the World Cup wins overall.',
   },
   countries: {
     MEX: 'Mexico', RSA: 'South Africa', KOR: 'South Korea', CZE: 'Czechia',

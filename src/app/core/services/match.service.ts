@@ -14,7 +14,7 @@ import {
   MatchStage,
   MatchView,
   Team,
-  deriveBettingState,
+  derivePredictionState,
 } from '../models/models';
 
 /** Display order: Groups A–H first, then knockout rounds. */
@@ -41,17 +41,17 @@ export class MatchService {
   private readonly sb = inject(SUPABASE_CLIENT);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  /** Re-evaluated every tick so betting state stays current without a refetch. */
+  /** Re-evaluated every tick so prediction state stays current without a refetch. */
   private readonly now = signal(Date.now());
   private readonly rows = signal<MatchWithTeams[]>([]);
   private channel: RealtimeChannel | null = null;
 
-  /** All matches as view models, chronological, with live betting state. */
+  /** All matches as view models, chronological, with live prediction state. */
   readonly matches = computed<MatchView[]>(() => {
     const now = this.now();
     return this.rows().map((row) => ({
       ...row,
-      bettingState: deriveBettingState(row, now),
+      predictionState: derivePredictionState(row, now),
     }));
   });
 
@@ -69,8 +69,8 @@ export class MatchService {
     }));
   });
 
-  readonly openForBetting = computed(() =>
-    this.matches().filter((m) => m.bettingState === 'open'),
+  readonly openForPredictions = computed(() =>
+    this.matches().filter((m) => m.predictionState === 'open'),
   );
 
   /** Matches currently in play (API-verified live status), earliest first. */
@@ -104,7 +104,7 @@ export class MatchService {
     if (error) throw error;
     if (!data) return null;
     const row = data as unknown as MatchWithTeams;
-    return { ...row, bettingState: deriveBettingState(row, Date.now()) };
+    return { ...row, predictionState: derivePredictionState(row, Date.now()) };
   }
 
   /** Subscribe to live match UPDATEs (scores/status). Browser only. */

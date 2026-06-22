@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { MatchService } from '../../../core/services/match.service';
-import { BetService } from '../../../core/services/bet.service';
+import { PredictionService } from '../../../core/services/prediction.service';
 import {
   MatchGoal,
   MatchView,
@@ -119,7 +119,7 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
                     <th scope="col" class="px-4 py-3">{{ 'matchDetail.rank' | transloco }}</th>
                     <th scope="col" class="px-4 py-3">{{ 'matchDetail.player' | transloco }}</th>
                     <th scope="col" class="px-4 py-3 text-right">{{ 'matchDetail.points' | transloco }}</th>
-                    <th scope="col" class="px-4 py-3 text-right">{{ 'matchDetail.betPlaced' | transloco }}</th>
+                    <th scope="col" class="px-4 py-3 text-right">{{ 'matchDetail.predictionPlaced' | transloco }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -166,7 +166,7 @@ export class MatchDetail implements OnInit {
   readonly id = input.required<string>();
 
   private readonly matchService = inject(MatchService);
-  private readonly bets = inject(BetService);
+  private readonly predictions = inject(PredictionService);
   private readonly pendingTasks = inject(PendingTasks);
 
   protected readonly match = signal<MatchView | null>(null);
@@ -188,7 +188,7 @@ export class MatchDetail implements OnInit {
     void this.pendingTasks.run(async () => {
       const [match, winners] = await Promise.all([
         this.matchService.getMatch(matchId),
-        this.bets.matchLeaderboard(matchId),
+        this.predictions.matchLeaderboard(matchId),
       ]);
       this.match.set(match);
       this.winners.set(winners);

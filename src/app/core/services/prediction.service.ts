@@ -1,24 +1,24 @@
 import { Injectable, effect, inject, signal } from '@angular/core';
 
 import { SUPABASE_CLIENT } from '../supabase/supabase';
-import { Bet, MatchWinnerEntry } from '../models/models';
+import { Prediction, MatchWinnerEntry } from '../models/models';
 import { AuthService } from './auth.service';
 
-/** Thrown when the DB rejects a bet because its window is closed (RLS). */
-export class BettingClosedError extends Error {
-  constructor(message = 'Betting is closed for this match.') {
+/** Thrown when the DB rejects a prediction because its window is closed (RLS). */
+export class PredictionClosedError extends Error {
+  constructor(message = 'Predictions are closed for this match.') {
     super(message);
-    this.name = 'BettingClosedError';
+    this.name = 'PredictionClosedError';
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class BetService {
+export class PredictionService {
   private readonly sb = inject(SUPABASE_CLIENT);
   private readonly auth = inject(AuthService);
 
-  private readonly _byMatch = signal<Map<number, Bet>>(new Map());
-  /** The signed-in user's bets keyed by match id; kept in sync with auth + writes. */
+  private readonly _byMatch = signal<Map<number, Prediction>>(new Map());
+  /** The signed-in user's predictions keyed by match id; kept in sync with auth + writes. */
   readonly byMatch = this._byMatch.asReadonly();
 
   constructor() {
@@ -29,14 +29,14 @@ export class BetService {
     });
   }
 
-  /** Reload the current user's bets into {@link byMatch}. */
+  /** Reload the current user's predictions into {@link byMatch}. */
   async refresh(): Promise<void> {
-    const list = await this.myBets();
-    this._byMatch.set(new Map(list.map((bet) => [bet.match_id, bet])));
+    const list = await this.myPredictions();
+    this._byMatch.set(new Map(list.map((prediction) => [prediction.match_id, prediction])));
   }
 
-  /** The signed-in user's bet for a match, or null. */
-  async myBet(matchId: number): Promise<Bet | null> {
+  /** The signed-in user's prediction for a match, or null. */
+  async myPrediction(matchId: number): Promise<Prediction | null> {
     const uid = this.auth.user()?.id;
     if (!uid) return null;
     const { data } = await this.sb
@@ -48,8 +48,8 @@ export class BetService {
     return data;
   }
 
-  /** All bets placed by the signed-in user (empty if not signed in). */
-  async myBets(): Promise<Bet[]> {
+  /** All predictions made by the signed-in user (empty if not signed in). */
+  async myPredictions(): Promise<Prediction[]> {
     const uid = this.auth.user()?.id;
     if (!uid) return [];
     const { data, error } = await this.sb
@@ -61,17 +61,17 @@ export class BetService {
   }
 
   /**
-   * Place or modify a bet. Uses upsert so the same call covers both cases.
-   * The betting window is enforced server-side by RLS — a rejection surfaces
-   * as a {@link BettingClosedError}.
+   * Place or modify a prediction. Uses upsert so the same call covers both cases.
+   * The prediction window is enforced server-side by RLS — a rejection surfaces
+   * as a {@link PredictionClosedError}.
    */
   async placeOrUpdate(
     matchId: number,
     homeScore: number,
     awayScore: number,
-  ): Promise<Bet> {
+  ): Promise<Prediction> {
     const uid = this.auth.user()?.id;
-    if (!uid) throw new Error('You must be signed in to place a bet.');
+    if (!uid) throw new Error('You must be signed in to make a prediction.');
 
     const { data, error } = await this.sb
       .from('bets')
@@ -87,12 +87,12 @@ export class BetService {
       .select()
       .single();
 
-    if (error) throw new BettingClosedError(error.message);
+    if (error) throw new PredictionClosedError(error.message);
     this._byMatch.update((map) => new Map(map).set(data.match_id, data));
     return data;
   }
 
-  /** Per-match ranking (winner = position 1), visible once betting closed. */
+  /** Per-match ranking (winner = position 1), visible once predictions close. */
   async matchLeaderboard(matchId: number): Promise<MatchWinnerEntry[]> {
     const { data, error } = await this.sb
       .from('match_winners')

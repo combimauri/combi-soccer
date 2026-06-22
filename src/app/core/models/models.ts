@@ -2,16 +2,16 @@ import { Tables } from '../supabase/database.types';
 
 export type Team = Tables<'teams'>;
 export type Profile = Tables<'profiles'>;
-export type Bet = Tables<'bets'>;
+export type Prediction = Tables<'bets'>;
 export type MatchRow = Tables<'matches'>;
 export type LeaderboardRow = Tables<'leaderboard'>;
 
-export type BetOutcome = 'home' | 'draw' | 'away';
+export type PredictionOutcome = 'home' | 'draw' | 'away';
 export type MatchStage = MatchRow['stage'];
 export type MatchStatus = MatchRow['status'];
 
-/** Lifecycle of the betting window for a single match. */
-export type BettingState = 'upcoming' | 'open' | 'closed' | 'finished';
+/** Lifecycle of the prediction window for a single match. */
+export type PredictionState = 'upcoming' | 'open' | 'closed' | 'finished';
 
 /** A goal event from the live match timeline. */
 export interface MatchGoal {
@@ -21,11 +21,11 @@ export interface MatchGoal {
   assist: string | null;
 }
 
-/** A match row with its teams joined and betting state derived for the UI. */
+/** A match row with its teams joined and prediction state derived for the UI. */
 export interface MatchView extends MatchRow {
   home: Team | null;
   away: Team | null;
-  bettingState: BettingState;
+  predictionState: PredictionState;
 }
 
 /** A leaderboard row joined with the owning profile's username. */
@@ -40,22 +40,22 @@ export interface MatchWinnerEntry extends MatchWinnerRow {
   profile: Pick<Profile, 'username'> | null;
 }
 
-const BET_OPENS_BEFORE_START_MS = 24 * 60 * 60 * 1000; // 24 hours before kickoff
-const BET_CLOSES_BEFORE_START_MS = 10 * 60 * 1000; // 10 minutes before kickoff
+const PREDICTION_OPENS_BEFORE_START_MS = 24 * 60 * 60 * 1000; // 24 hours before kickoff
+const PREDICTION_CLOSES_BEFORE_START_MS = 10 * 60 * 1000; // 10 minutes before kickoff
 
 /**
  * Mirror of the SQL `is_betting_open()` function so the client highlight and the
  * server-enforced window agree. The DB always has the final say; this is only
  * for display.
  */
-export function deriveBettingState(match: MatchRow, now: number): BettingState {
+export function derivePredictionState(match: MatchRow, now: number): PredictionState {
   if (match.status === 'finished' || match.status === 'cancelled') {
     return 'finished';
   }
 
   const start = new Date(match.start_time).getTime();
-  const opensAt = start - BET_OPENS_BEFORE_START_MS;
-  const closesAt = start - BET_CLOSES_BEFORE_START_MS;
+  const opensAt = start - PREDICTION_OPENS_BEFORE_START_MS;
+  const closesAt = start - PREDICTION_CLOSES_BEFORE_START_MS;
 
   if (now < opensAt) return 'upcoming';
   if (now > closesAt) return 'closed';

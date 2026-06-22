@@ -5,19 +5,19 @@ export const es = {
   },
   nav: {
     brand: 'Quiniela Mundial',
-    betNow: 'Apostar ahora',
+    predictNow: 'Pronosticar ahora',
     matches: 'Todos los partidos',
     leaderboard: 'Clasificación',
     howToPlay: 'Cómo jugar',
   },
-  betNow: {
-    title: 'Apostar ahora',
-    subtitle: 'Partidos en vivo y abiertos para apostar, con tus pronósticos.',
+  predict: {
+    title: 'Pronosticar ahora',
+    subtitle: 'Partidos en vivo y abiertos para pronosticar, con tus predicciones.',
     liveTitle: 'En vivo',
-    openTitle: 'Abiertas para apostar',
-    empty: 'No hay partidos abiertos para apostar ahora. Vuelve cerca del inicio.',
+    openTitle: 'Abiertos para pronosticar',
+    empty: 'No hay partidos abiertos para pronosticar ahora. Vuelve cerca del inicio.',
     historyTitle: 'Tu historial',
-    historySubtitle: 'Tus apuestas anteriores — toca un partido para ver detalles y su clasificación.',
+    historySubtitle: 'Tus pronósticos anteriores — toca un partido para ver detalles y su clasificación.',
   },
   auth: {
     greeting: 'Hola, {{ username }}',
@@ -33,7 +33,7 @@ export const es = {
     live: 'EN VIVO',
     finished: 'Finalizado',
     cancelled: 'Cancelado',
-    open: 'Apuestas abiertas',
+    open: 'Pronósticos abiertos',
     closed: 'Cerrado',
     upcoming: 'Próximo',
   },
@@ -47,15 +47,15 @@ export const es = {
   },
   matches: {
     title: 'Partidos del Mundial',
-    subtitle: 'Los partidos con apuestas abiertas se resaltan en verde.',
+    subtitle: 'Los partidos abiertos para pronosticar se resaltan en verde.',
     empty: 'Aún no hay partidos programados.',
     viewDetails: 'Ver detalles',
-    placeBet: 'Apostar',
-    editBet: 'Editar apuesta',
-    yourBet: 'Tu apuesta',
+    makePrediction: 'Pronosticar',
+    editPrediction: 'Editar pronóstico',
+    yourPrediction: 'Tu pronóstico',
     points: '{{ points }} pts',
-    opensBefore: 'Las apuestas abren 24 h antes del inicio',
-    bettingClosed: 'Apuestas cerradas',
+    opensBefore: 'Los pronósticos abren 24 h antes del inicio',
+    predictionsClosed: 'Pronósticos cerrados',
   },
   stages: {
     group_a: 'Grupo A',
@@ -77,7 +77,7 @@ export const es = {
     third_place: 'Tercer puesto',
     final: 'Final',
   },
-  bet: {
+  prediction: {
     title: 'Tu pronóstico',
     close: 'Cerrar diálogo',
     increase: 'Aumentar marcador',
@@ -86,10 +86,10 @@ export const es = {
     draw: 'Empate',
     win: 'Gana {{ team }}',
     cancel: 'Cancelar',
-    place: 'Apostar',
+    place: 'Guardar pronóstico',
     saving: 'Guardando…',
     errorClosed:
-      'Las apuestas se acaban de cerrar para este partido — tu apuesta no se guardó.',
+      'Los pronósticos se acaban de cerrar para este partido — tu pronóstico no se guardó.',
     errorGeneric: 'Algo salió mal. Inténtalo de nuevo.',
   },
   leaderboard: {
@@ -114,7 +114,7 @@ export const es = {
     rank: '#',
     player: 'Jugador',
     points: 'Puntos',
-    betPlaced: 'Apuesta',
+    predictionPlaced: 'Pronóstico',
     empty:
       'Aún no hay resultados — la clasificación aparece cuando se puntúe el partido.',
     notFound: 'Partido no encontrado.',
@@ -122,9 +122,9 @@ export const es = {
     unknown: 'Desconocido',
   },
   signIn: {
-    title: 'Inicia sesión para apostar',
+    title: 'Inicia sesión para pronosticar',
     subtitle:
-      'Solo necesitas una cuenta para apostar. La navegación está abierta para todos.',
+      'Solo necesitas una cuenta para pronosticar. La navegación está abierta para todos.',
     google: 'Continuar con Google',
     or: 'O',
     emailLabel: 'Enlace mágico por correo',
@@ -149,10 +149,10 @@ export const es = {
   },
   howto: {
     title: 'Cómo jugar',
-    whenTitle: '¿Cuándo puedo apostar?',
-    when1: 'Las apuestas <strong>abren 24 horas antes</strong> del inicio.',
+    whenTitle: '¿Cuándo puedo pronosticar?',
+    when1: 'Los pronósticos <strong>abren 24 horas antes</strong> del inicio.',
     when2:
-      'Las apuestas <strong>cierran 10 minutos antes</strong> del inicio.',
+      'Los pronósticos <strong>cierran 10 minutos antes</strong> del inicio.',
     when3: 'Puedes editar tu pronóstico libremente mientras la ventana esté abierta.',
     predictionTitle: 'Tu pronóstico',
     prediction:
@@ -164,7 +164,7 @@ export const es = {
     scorePartial: 'Cada cantidad de goles acertada por equipo (si no es exacto)',
     tiebreakTitle: 'Desempates y cómo ganar',
     tiebreak:
-      'Si dos jugadores aciertan igual de bien, gana quien haya apostado <strong>antes</strong>. Quien tenga más puntos al final del Mundial gana en general.',
+      'Si dos jugadores aciertan igual de bien, gana quien haya pronosticado <strong>antes</strong>. Quien tenga más puntos al final del Mundial gana en general.',
   },
   countries: {
     MEX: 'México', RSA: 'Sudáfrica', KOR: 'Corea del Sur', CZE: 'Chequia',

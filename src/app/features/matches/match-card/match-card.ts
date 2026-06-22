@@ -9,7 +9,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { Bet, MatchGoal, MatchView } from '../../../core/models/models';
+import { Prediction, MatchGoal, MatchView } from '../../../core/models/models';
 import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
 
 @Component({
@@ -19,10 +19,10 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
   template: `
     <article
       class="rounded-2xl border bg-white p-4 shadow-sm transition duration-200 motion-safe:hover:-translate-y-0.5 hover:shadow-md"
-      [class.border-emerald-400]="match().bettingState === 'open'"
-      [class.ring-2]="match().bettingState === 'open'"
-      [class.ring-emerald-200]="match().bettingState === 'open'"
-      [class.border-slate-200]="match().bettingState !== 'open'"
+      [class.border-emerald-400]="match().predictionState === 'open'"
+      [class.ring-2]="match().predictionState === 'open'"
+      [class.ring-emerald-200]="match().predictionState === 'open'"
+      [class.border-slate-200]="match().predictionState !== 'open'"
     >
       <header class="mb-3 flex items-center justify-between gap-2">
         <time
@@ -106,9 +106,9 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         </ul>
       }
 
-      @if (bet(); as b) {
+      @if (prediction(); as b) {
         <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-1.5 text-center text-sm text-emerald-800">
-          {{ 'matches.yourBet' | transloco }}:
+          {{ 'matches.yourPrediction' | transloco }}:
           <span class="font-bold tabular-nums">{{ b.predicted_home_score }}–{{ b.predicted_away_score }}</span>
           @if (b.points_awarded !== null) {
             <span class="ms-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-xs font-bold text-amber-700">
@@ -128,18 +128,18 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         >
           {{ 'matches.viewDetails' | transloco }}
         </a>
-        @if (match().bettingState === 'open') {
+        @if (match().predictionState === 'open') {
           <button
             type="button"
-            (click)="placeBet.emit(match())"
+            (click)="predict.emit(match())"
             class="cursor-pointer rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
           >
-            {{ (bet() ? 'matches.editBet' : 'matches.placeBet') | transloco }}
+            {{ (prediction() ? 'matches.editPrediction' : 'matches.makePrediction') | transloco }}
           </button>
-        } @else if (match().bettingState === 'upcoming') {
+        } @else if (match().predictionState === 'upcoming') {
           <span class="text-xs text-slate-500">{{ 'matches.opensBefore' | transloco }}</span>
         } @else {
-          <span class="text-xs text-slate-500">{{ 'matches.bettingClosed' | transloco }}</span>
+          <span class="text-xs text-slate-500">{{ 'matches.predictionsClosed' | transloco }}</span>
         }
       </footer>
     </article>
@@ -147,9 +147,9 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
 })
 export class MatchCard {
   readonly match = input.required<MatchView>();
-  /** The signed-in user's existing bet for this match, if any. */
-  readonly bet = input<Bet | null>(null);
-  readonly placeBet = output<MatchView>();
+  /** The signed-in user's existing prediction for this match, if any. */
+  readonly prediction = input<Prediction | null>(null);
+  readonly predict = output<MatchView>();
 
   protected readonly hasScore = computed(
     () => this.match().home_score !== null && this.match().away_score !== null,
@@ -192,7 +192,7 @@ export class MatchCard {
     if (m.status === 'live') return 'status.live';
     if (m.status === 'finished') return 'status.finished';
     if (m.status === 'cancelled') return 'status.cancelled';
-    switch (m.bettingState) {
+    switch (m.predictionState) {
       case 'open':
         return 'status.open';
       case 'closed':
@@ -208,7 +208,7 @@ export class MatchCard {
     if (m.status === 'finished' || m.status === 'cancelled') {
       return 'bg-slate-200 text-slate-700';
     }
-    switch (m.bettingState) {
+    switch (m.predictionState) {
       case 'open':
         return 'bg-emerald-100 text-emerald-800';
       case 'closed':

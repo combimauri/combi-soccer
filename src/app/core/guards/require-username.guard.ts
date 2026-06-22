@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { ProfileService } from '../services/profile.service';
 
 /**
- * Gate for the betting action (not for browsing). Sends anonymous users to
+ * Gate for the prediction action (not for browsing). Sends anonymous users to
  * sign-in, and first-time users to choose their mandatory username.
  */
 export const requireUsername: CanActivateFn = async () => {
