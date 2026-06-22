@@ -6,7 +6,9 @@ export const es = {
   nav: {
     brand: 'Quiniela Mundial',
     predictNow: 'Pronosticar ahora',
+    predictNowShort: 'Pronosticar',
     matches: 'Todos los partidos',
+    matchesShort: 'Partidos',
     leaderboard: 'Clasificación',
     howToPlay: 'Cómo jugar',
     more: 'Más',

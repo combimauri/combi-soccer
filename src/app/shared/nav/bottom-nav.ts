@@ -45,11 +45,11 @@ import { NavIcon } from './nav-icon';
                 <combi-nav-icon [name]="item.icon" class="h-5 w-5" />
               </span>
               <span
-                class="text-[11px] leading-none"
+                class="whitespace-nowrap text-[11px] leading-none"
                 [class.font-semibold]="rla.isActive"
                 [class.font-medium]="!rla.isActive"
               >
-                {{ item.labelKey | transloco }}
+                {{ (item.shortLabelKey ?? item.labelKey) | transloco }}
               </span>
             </a>
           </li>

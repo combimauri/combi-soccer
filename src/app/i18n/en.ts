@@ -6,7 +6,9 @@ export const en = {
   nav: {
     brand: 'Quiniela Mundial',
     predictNow: 'Predict now',
+    predictNowShort: 'Predict',
     matches: 'All matches',
+    matchesShort: 'Matches',
     leaderboard: 'Leaderboard',
     howToPlay: 'How to play',
     more: 'More',
