@@ -12,6 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthStatus } from './features/auth/auth-status/auth-status';
 import { LanguageSwitcher } from './shared/language-switcher/language-switcher';
 import { BottomNav } from './shared/nav/bottom-nav';
+import { BackToTop } from './shared/back-to-top/back-to-top';
 import { NAV_ITEMS } from './shared/nav/nav-items';
 
 @Component({
@@ -24,6 +25,7 @@ import { NAV_ITEMS } from './shared/nav/nav-items';
     AuthStatus,
     LanguageSwitcher,
     BottomNav,
+    BackToTop,
     TranslocoPipe,
   ],
   templateUrl: './app.html',

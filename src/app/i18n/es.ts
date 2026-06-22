@@ -2,6 +2,7 @@ export const es = {
   common: {
     tbd: 'Por definir',
     vs: 'vs',
+    backToTop: 'Volver arriba',
   },
   nav: {
     brand: 'Quiniela Mundial',

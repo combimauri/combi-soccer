@@ -19,11 +19,13 @@ import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCard } from '../match-card/match-card';
 import { PredictionDialog } from '../../predictions/prediction-dialog/prediction-dialog';
 import { SearchField } from '../../../shared/search-field/search-field';
+import { InfiniteScroll } from '../../../shared/infinite-scroll/infinite-scroll';
+import { paginate } from '../../../shared/infinite-scroll/paginate';
 
 @Component({
   selector: 'combi-match-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatchCard, PredictionDialog, SearchField, TranslocoPipe],
+  imports: [MatchCard, PredictionDialog, SearchField, InfiniteScroll, TranslocoPipe],
   template: `
     <div class="mb-6">
       <h1 class="font-display text-3xl font-bold tracking-tight">{{ 'matches.title' | transloco }}</h1>
@@ -38,7 +40,7 @@ import { SearchField } from '../../../shared/search-field/search-field';
       (valueChange)="query.set($event)"
     />
 
-    @for (group of filteredGroups(); track group.stage) {
+    @for (group of groupsPage.items(); track group.stage) {
       <section class="mb-8">
         <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
           {{ 'stages.' + group.stage | transloco }}
@@ -61,6 +63,9 @@ import { SearchField } from '../../../shared/search-field/search-field';
       } @else {
         <p class="text-slate-500">{{ 'matches.empty' | transloco }}</p>
       }
+    }
+    @if (groupsPage.hasMore()) {
+      <div combiInfiniteScroll (reached)="groupsPage.more()" aria-hidden="true" class="h-px"></div>
     }
 
     <combi-prediction-dialog #predictionDialog />
@@ -88,6 +93,9 @@ export class MatchList implements OnInit, OnDestroy {
       }))
       .filter((group) => group.matches.length > 0);
   });
+
+  /** Reveal stage groups a few at a time as the user scrolls. */
+  protected readonly groupsPage = paginate(this.filteredGroups, 4);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private timer: ReturnType<typeof setInterval> | undefined;
 

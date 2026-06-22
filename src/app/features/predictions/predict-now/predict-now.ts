@@ -18,6 +18,8 @@ import { PredictionService } from '../../../core/services/prediction.service';
 import { MatchCard } from '../../matches/match-card/match-card';
 import { PredictionDialog } from '../prediction-dialog/prediction-dialog';
 import { SearchField } from '../../../shared/search-field/search-field';
+import { InfiniteScroll } from '../../../shared/infinite-scroll/infinite-scroll';
+import { paginate } from '../../../shared/infinite-scroll/paginate';
 
 /**
  * Default view: matches in play right now (live score, refreshed) and matches
@@ -27,7 +29,7 @@ import { SearchField } from '../../../shared/search-field/search-field';
 @Component({
   selector: 'combi-predict-now',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatchCard, PredictionDialog, SearchField, TranslocoPipe],
+  imports: [MatchCard, PredictionDialog, SearchField, InfiniteScroll, TranslocoPipe],
   template: `
     <div class="mb-6">
       <h1 class="font-display text-3xl font-bold tracking-tight">{{ 'predict.title' | transloco }}</h1>
@@ -58,22 +60,23 @@ import { SearchField } from '../../../shared/search-field/search-field';
       <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
         {{ 'predict.openTitle' | transloco }}
       </h2>
-      @if (matchService.openForPredictions(); as open) {
-        @if (open.length) {
-          <div class="grid gap-3 sm:grid-cols-2">
-            @for (match of open; track match.id) {
-              <combi-match-card
-                [match]="match"
-                [prediction]="predictions.byMatch().get(match.id) ?? null"
-                (predict)="predictionDialog.open($event)"
-              />
-            }
-          </div>
-        } @else {
-          <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
-            {{ 'predict.empty' | transloco }}
-          </p>
+      @if (matchService.openForPredictions().length) {
+        <div class="grid gap-3 sm:grid-cols-2">
+          @for (match of openPage.items(); track match.id) {
+            <combi-match-card
+              [match]="match"
+              [prediction]="predictions.byMatch().get(match.id) ?? null"
+              (predict)="predictionDialog.open($event)"
+            />
+          }
+        </div>
+        @if (openPage.hasMore()) {
+          <div combiInfiniteScroll (reached)="openPage.more()" aria-hidden="true" class="h-px"></div>
         }
+      } @else {
+        <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
+          {{ 'predict.empty' | transloco }}
+        </p>
       }
     </section>
 
@@ -94,7 +97,7 @@ import { SearchField } from '../../../shared/search-field/search-field';
           @if (filteredHistory(); as results) {
             @if (results.length) {
               <div class="grid gap-3 sm:grid-cols-2">
-                @for (match of results; track match.id) {
+                @for (match of historyPage.items(); track match.id) {
                   <combi-match-card
                     [match]="match"
                     [prediction]="predictions.byMatch().get(match.id) ?? null"
@@ -102,6 +105,9 @@ import { SearchField } from '../../../shared/search-field/search-field';
                   />
                 }
               </div>
+              @if (historyPage.hasMore()) {
+                <div combiInfiniteScroll (reached)="historyPage.more()" aria-hidden="true" class="h-px"></div>
+              }
             } @else {
               <p class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-500">
                 {{ 'search.noResults' | transloco: { query: query() } }}
@@ -139,6 +145,10 @@ export class PredictNow implements OnInit, OnDestroy {
     const past = this.history();
     return ids ? past.filter((m) => ids.has(m.id)) : past;
   });
+
+  /** Reveal open matches and past predictions a page at a time as the user scrolls. */
+  protected readonly openPage = paginate(this.matchService.openForPredictions, 8);
+  protected readonly historyPage = paginate(this.filteredHistory, 8);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private tickTimer: ReturnType<typeof setInterval> | undefined;
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
