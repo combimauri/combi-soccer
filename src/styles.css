@@ -23,6 +23,12 @@
 }
 
 @layer base {
+  /* Tint the area behind the OS status bar / top safe-area to match the header
+   * (the app shell paints slate-50 over the content itself). */
+  html {
+    background-color: var(--color-pitch-900);
+  }
+
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
