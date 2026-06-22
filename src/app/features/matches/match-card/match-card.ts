@@ -15,10 +15,11 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
 @Component({
   selector: 'combi-match-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'flex flex-col' },
   imports: [NgOptimizedImage, RouterLink, LocalDatePipe, TranslocoPipe],
   template: `
     <article
-      class="rounded-2xl border bg-white p-4 shadow-sm transition duration-200 motion-safe:hover:-translate-y-0.5 hover:shadow-md"
+      class="flex min-h-48 flex-1 flex-col rounded-2xl border bg-white p-4 shadow-sm transition duration-200 motion-safe:hover:-translate-y-0.5 hover:shadow-md"
       [class.border-emerald-400]="match().predictionState === 'open'"
       [class.ring-2]="match().predictionState === 'open'"
       [class.ring-emerald-200]="match().predictionState === 'open'"
@@ -121,7 +122,7 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         </p>
       }
 
-      <footer class="mt-4 flex items-center justify-between">
+      <footer class="mt-auto flex items-center justify-between pt-4">
         <a
           [routerLink]="['/matches', match().id]"
           class="text-xs font-medium text-slate-500 hover:underline"
