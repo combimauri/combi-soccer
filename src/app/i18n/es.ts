@@ -31,6 +31,8 @@ export const es = {
     greeting: 'Hola, {{ username }}',
     signOut: 'Cerrar sesión',
     signIn: 'Iniciar sesión',
+    account: 'Cuenta',
+    signedInAs: 'Sesión iniciada como',
   },
   lang: {
     label: 'Idioma',

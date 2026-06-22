@@ -31,6 +31,8 @@ export const en = {
     greeting: 'Hi, {{ username }}',
     signOut: 'Sign out',
     signIn: 'Sign in',
+    account: 'Account',
+    signedInAs: 'Signed in as',
   },
   lang: {
     label: 'Language',
