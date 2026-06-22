@@ -29,7 +29,7 @@
         </span>
       </a>
 
-      <ul class="hidden items-center gap-1 text-sm font-medium md:flex">
+      <ul class="hidden shrink-0 items-center gap-1 text-sm font-medium lg:flex">
         @for (item of navItems; track item.path) {
           <li>
             <a
@@ -37,7 +37,7 @@
               routerLinkActive="bg-emerald-500 text-white shadow-sm"
               [routerLinkActiveOptions]="item.exact ? exactMatch : looseMatch"
               ariaCurrentWhenActive="page"
-              class="block rounded-full px-3 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
+              class="block whitespace-nowrap rounded-full px-3.5 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
             >
               {{ item.labelKey | transloco }}
             </a>
@@ -45,7 +45,7 @@
         }
       </ul>
 
-      <div class="ms-auto flex items-center gap-3 text-sm">
+      <div class="ms-auto flex shrink-0 items-center gap-3 text-sm">
         <combi-language-switcher />
         @defer (on idle) {
           <combi-auth-status />
@@ -57,7 +57,7 @@
   </header>
 
   <main
-    class="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8"
+    class="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
   >
     <router-outlet />
   </main>

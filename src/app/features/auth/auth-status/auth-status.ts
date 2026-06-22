@@ -21,7 +21,7 @@ import { ProfileService } from '../../../core/services/profile.service';
   imports: [RouterLink, TranslocoPipe],
   template: `
     @if (auth.isAuthenticated()) {
-      <span class="hidden text-emerald-50/90 sm:inline">
+      <span class="hidden text-emerald-50/90 xl:inline">
         @if (profile.profile(); as p) {
           {{ 'auth.greeting' | transloco: { username: p.username } }}
         } @else {

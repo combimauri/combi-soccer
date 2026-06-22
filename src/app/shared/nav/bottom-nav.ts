@@ -22,7 +22,7 @@ import { NavIcon } from './nav-icon';
   host: { '(document:keydown.escape)': 'closeMore()' },
   template: `
     <nav
-      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       aria-label="Primary"
     >
       <ul class="mx-auto flex max-w-md items-stretch">
@@ -84,12 +84,12 @@ import { NavIcon } from './nav-icon';
         (click)="closeMore()"
         tabindex="-1"
         aria-label="{{ 'nav.closeMenu' | transloco }}"
-        class="fixed inset-0 z-40 bg-slate-900/40 md:hidden"
+        class="fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
       ></button>
       <div
         role="menu"
         aria-label="{{ 'nav.more' | transloco }}"
-        class="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-slate-200 bg-white pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-2xl md:hidden"
+        class="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-slate-200 bg-white pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-2xl lg:hidden"
       >
         @for (item of overflow; track item.path) {
           <a
