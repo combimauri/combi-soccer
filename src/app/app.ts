@@ -11,6 +11,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { AuthStatus } from './features/auth/auth-status/auth-status';
 import { LanguageSwitcher } from './shared/language-switcher/language-switcher';
+import { BottomNav } from './shared/nav/bottom-nav';
+import { NAV_ITEMS } from './shared/nav/nav-items';
 
 @Component({
   selector: 'combi-root',
@@ -21,6 +23,7 @@ import { LanguageSwitcher } from './shared/language-switcher/language-switcher';
     RouterLinkActive,
     AuthStatus,
     LanguageSwitcher,
+    BottomNav,
     TranslocoPipe,
   ],
   templateUrl: './app.html',
@@ -29,6 +32,10 @@ import { LanguageSwitcher } from './shared/language-switcher/language-switcher';
 export class App {
   private readonly document = inject(DOCUMENT);
   private readonly transloco = inject(TranslocoService);
+
+  protected readonly navItems = NAV_ITEMS;
+  protected readonly exactMatch = { exact: true } as const;
+  protected readonly looseMatch = { exact: false } as const;
 
   private readonly activeLang = toSignal(this.transloco.langChanges$, {
     initialValue: this.transloco.getActiveLang(),

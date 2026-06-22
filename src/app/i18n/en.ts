@@ -9,6 +9,8 @@ export const en = {
     matches: 'All matches',
     leaderboard: 'Leaderboard',
     howToPlay: 'How to play',
+    more: 'More',
+    closeMenu: 'Close menu',
   },
   predict: {
     title: 'Predict now',

@@ -9,6 +9,8 @@ export const es = {
     matches: 'Todos los partidos',
     leaderboard: 'Clasificación',
     howToPlay: 'Cómo jugar',
+    more: 'Más',
+    closeMenu: 'Cerrar menú',
   },
   predict: {
     title: 'Pronosticar ahora',

@@ -1,7 +1,7 @@
 <div class="flex min-h-dvh flex-col bg-slate-50 text-slate-900">
   <header class="bg-pitch-900 text-white shadow-sm">
     <nav
-      class="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-6"
+      class="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:gap-6"
       aria-label="Primary"
     >
       <a
@@ -29,49 +29,23 @@
         </span>
       </a>
 
-      <ul
-        class="nav-scroll -mx-4 flex items-center gap-1 overflow-x-auto whitespace-nowrap px-4 text-sm font-medium sm:mx-0 sm:px-0"
-      >
-        <li>
-          <a
-            routerLink="/"
-            routerLinkActive="bg-emerald-500 text-white shadow-sm"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="block rounded-full px-3 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {{ 'nav.predictNow' | transloco }}
-          </a>
-        </li>
-        <li>
-          <a
-            routerLink="/matches"
-            routerLinkActive="bg-emerald-500 text-white shadow-sm"
-            class="block rounded-full px-3 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {{ 'nav.matches' | transloco }}
-          </a>
-        </li>
-        <li>
-          <a
-            routerLink="/leaderboard"
-            routerLinkActive="bg-emerald-500 text-white shadow-sm"
-            class="block rounded-full px-3 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {{ 'nav.leaderboard' | transloco }}
-          </a>
-        </li>
-        <li>
-          <a
-            routerLink="/how-to-play"
-            routerLinkActive="bg-emerald-500 text-white shadow-sm"
-            class="block rounded-full px-3 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            {{ 'nav.howToPlay' | transloco }}
-          </a>
-        </li>
+      <ul class="hidden items-center gap-1 text-sm font-medium md:flex">
+        @for (item of navItems; track item.path) {
+          <li>
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="bg-emerald-500 text-white shadow-sm"
+              [routerLinkActiveOptions]="item.exact ? exactMatch : looseMatch"
+              ariaCurrentWhenActive="page"
+              class="block rounded-full px-3 py-1.5 text-emerald-50/80 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              {{ item.labelKey | transloco }}
+            </a>
+          </li>
+        }
       </ul>
 
-      <div class="flex items-center gap-3 text-sm sm:ms-auto">
+      <div class="ms-auto flex items-center gap-3 text-sm">
         <combi-language-switcher />
         @defer (on idle) {
           <combi-auth-status />
@@ -82,7 +56,11 @@
     </nav>
   </header>
 
-  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+  <main
+    class="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8"
+  >
     <router-outlet />
   </main>
+
+  <combi-bottom-nav />
 </div>
