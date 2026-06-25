@@ -122,12 +122,13 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         </p>
       }
 
-      <footer class="mt-auto flex items-center justify-between pt-4">
+      <footer class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-4">
         <a
           [routerLink]="['/matches', match().id]"
-          class="text-xs font-medium text-slate-500 hover:underline"
+          class="inline-flex items-center gap-1 rounded-full border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
         >
           {{ 'matches.viewDetails' | transloco }}
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </a>
         @if (match().predictionState === 'open') {
           <button

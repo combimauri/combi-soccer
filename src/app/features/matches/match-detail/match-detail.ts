@@ -12,6 +12,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { AuthService } from '../../../core/services/auth.service';
 import { MatchService } from '../../../core/services/match.service';
 import { PredictionService } from '../../../core/services/prediction.service';
 import {
@@ -124,7 +125,12 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
                 </thead>
                 <tbody>
                   @for (row of rows; track row.user_id) {
-                    <tr class="border-t border-slate-100" [class.bg-amber-50]="row.position === 1">
+                    @let mine = row.user_id === currentUserId();
+                    <tr
+                      class="border-t border-slate-100"
+                      [class.bg-emerald-50]="mine"
+                      [class.bg-amber-50]="!mine && row.position === 1"
+                    >
                       <td class="px-4 py-2.5">
                         @if (row.position === 1) {
                           <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-300">
@@ -137,8 +143,15 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
                           <span class="ms-2 font-mono tabular-nums text-slate-500">{{ row.position }}</span>
                         }
                       </td>
-                      <td class="px-4 py-2.5 font-medium">
-                        {{ row.profile?.username ?? ('matchDetail.unknown' | transloco) }}
+                      <td class="px-4 py-2.5 font-medium" [class.text-emerald-800]="mine">
+                        <span [class.font-bold]="mine">
+                          {{ row.profile?.username ?? ('matchDetail.unknown' | transloco) }}
+                        </span>
+                        @if (mine) {
+                          <span class="ms-2 inline-block rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">
+                            {{ 'leaderboard.you' | transloco }}
+                          </span>
+                        }
                       </td>
                       <td class="font-display px-4 py-2.5 text-right text-lg font-bold tabular-nums">{{ row.points_awarded }}</td>
                       <td class="whitespace-nowrap px-4 py-2.5 text-right text-xs tabular-nums text-slate-500">
@@ -168,9 +181,13 @@ export class MatchDetail implements OnInit {
   private readonly matchService = inject(MatchService);
   private readonly predictions = inject(PredictionService);
   private readonly pendingTasks = inject(PendingTasks);
+  private readonly auth = inject(AuthService);
 
   protected readonly match = signal<MatchView | null>(null);
   protected readonly winners = signal<MatchWinnerEntry[] | null>(null);
+
+  /** Id of the signed-in user, so their row stands out (null when anonymous). */
+  protected readonly currentUserId = computed(() => this.auth.user()?.id ?? null);
 
   protected readonly hasScore = computed(
     () =>
