@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   PLATFORM_ID,
+  afterNextRender,
   inject,
   signal,
 } from '@angular/core';
@@ -9,15 +11,14 @@ import { isPlatformBrowser } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
- * Floating "scroll to top" button. Appears once the page is scrolled past a
- * threshold; sits above the mobile tab bar. Browser-only behaviour (hidden
- * during SSR until the first scroll).
+ * Floating "scroll to top" button. Appears once the app shell's scroll
+ * container (`#app-scroll`) is scrolled past a threshold; sits above the mobile
+ * tab bar. Browser-only behaviour (hidden during SSR until the first scroll).
  */
 @Component({
   selector: 'combi-back-to-top',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoPipe],
-  host: { '(window:scroll)': 'onScroll()' },
   template: `
     @if (visible()) {
       <button
@@ -33,19 +34,31 @@ import { TranslocoPipe } from '@jsverse/transloco';
     }
   `,
 })
-export class BackToTop {
+export class BackToTop implements OnDestroy {
   protected readonly visible = signal(false);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private scroller: HTMLElement | null = null;
 
-  protected onScroll(): void {
-    if (!this.isBrowser) return;
-    this.visible.set(window.scrollY > 400);
+  private readonly onScroll = (): void => {
+    if (this.scroller) this.visible.set(this.scroller.scrollTop > 400);
+  };
+
+  constructor() {
+    afterNextRender(() => {
+      this.scroller = document.getElementById('app-scroll');
+      this.scroller?.addEventListener('scroll', this.onScroll, { passive: true });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.scroller?.removeEventListener('scroll', this.onScroll);
   }
 
   protected scrollToTop(): void {
+    if (!this.isBrowser) return;
     const reduce = window.matchMedia?.(
       '(prefers-reduced-motion: reduce)',
     ).matches;
-    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    this.scroller?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   }
 }

@@ -21,13 +21,8 @@ import { NavIcon } from './nav-icon';
   imports: [RouterLink, RouterLinkActive, NavIcon, TranslocoPipe],
   host: { '(document:keydown.escape)': 'closeMore()' },
   template: `
-    <!-- The box extends 50vh below the screen (offset by negative bottom, with
-         matching bottom padding so the tabs stay put). Safari clips a fixed
-         bar's layer to its own box during the toolbar-collapse animation, so
-         the fill has to be part of the box — not overflow — to cover the strip
-         the shrinking toolbar exposes underneath. -->
     <nav
-      class="fixed inset-x-0 bottom-[-50vh] z-40 border-t border-slate-200 bg-white pb-[calc(50vh+env(safe-area-inset-bottom))] lg:hidden"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Primary"
     >
       <ul class="mx-auto flex max-w-md items-stretch">

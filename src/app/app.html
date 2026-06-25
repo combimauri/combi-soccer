@@ -1,4 +1,4 @@
-<div class="flex min-h-dvh flex-col bg-slate-50 text-slate-900">
+<div class="flex h-dvh flex-col overflow-hidden bg-slate-50 text-slate-900">
   <header class="bg-pitch-900 pt-[env(safe-area-inset-top)] text-white shadow-sm">
     <nav
       class="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 sm:gap-6"
@@ -56,10 +56,15 @@
     </nav>
   </header>
 
-  <main
-    class="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
-  >
-    <router-outlet />
+  <!-- The app shell itself doesn't scroll; this is the scroll container. Keeping
+       the document body fixed stops iOS Safari from collapsing its toolbar,
+       which otherwise leaves the fixed bottom nav detached from the bottom. -->
+  <main id="app-scroll" class="flex-1 overflow-y-auto overscroll-contain">
+    <div
+      class="mx-auto w-full max-w-5xl px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
+    >
+      <router-outlet />
+    </div>
   </main>
 
   <combi-bottom-nav />
