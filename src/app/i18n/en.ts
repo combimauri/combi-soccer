@@ -113,6 +113,7 @@ export const en = {
     points: 'Points',
     exact: 'Exact',
     outcomes: 'Outcomes',
+    you: 'You',
     empty: 'No points yet — the board fills up once the first match is scored.',
   },
   matchDetail: {

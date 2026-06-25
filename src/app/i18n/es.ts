@@ -115,6 +115,7 @@ export const es = {
     points: 'Puntos',
     exact: 'Exactos',
     outcomes: 'Resultados',
+    you: 'Tú',
     empty:
       'Aún no hay puntos — la tabla se llena cuando se puntúe el primer partido.',
   },
