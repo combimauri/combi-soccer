@@ -25,19 +25,19 @@
 @layer base {
   /* Tint the safe-area edges that peek out behind the OS chrome: green at the
    * top (matching the header) and white at the bottom (matching the bottom nav),
-   * so each blends with whatever sits against it. The app shell paints slate-50
-   * over the content in between, hiding the gradient's midpoint. Fixed so the
-   * split maps to the viewport regardless of scroll. */
+   * so each blends with whatever sits against it. A scroll-attached gradient is
+   * used (not `fixed`, which gets clipped out of the safe-area insets): a green
+   * band tall enough to cover the top status-bar inset, then white all the way
+   * down. The opaque header and app shell hide the transition. */
   html {
-    background:
-      linear-gradient(
-          to bottom,
-          var(--color-pitch-900) 0,
-          var(--color-pitch-900) 50%,
-          #fff 50%,
-          #fff 100%
-        )
-        fixed;
+    background: linear-gradient(
+      to bottom,
+      var(--color-pitch-900) 0,
+      var(--color-pitch-900) 160px,
+      #fff 160px,
+      #fff 100%
+    );
+    background-repeat: no-repeat;
   }
 
   body {
