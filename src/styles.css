@@ -23,21 +23,12 @@
 }
 
 @layer base {
-  /* Tint the safe-area edges that peek out behind the OS chrome: green at the
-   * top (matching the header) and white at the bottom (matching the bottom nav),
-   * so each blends with whatever sits against it. A scroll-attached gradient is
-   * used (not `fixed`, which gets clipped out of the safe-area insets): a green
-   * band tall enough to cover the top status-bar inset, then white all the way
-   * down. The opaque header and app shell hide the transition. */
+  /* Tint the area behind the OS status bar / top safe-area to match the header.
+   * iOS paints the top status-bar strip from this single solid canvas color, so
+   * it has to be the header's green. The bottom safe-area is covered by the
+   * (opaque) bottom nav instead, so the green here doesn't reach the bottom. */
   html {
-    background: linear-gradient(
-      to bottom,
-      var(--color-pitch-900) 0,
-      var(--color-pitch-900) 160px,
-      #fff 160px,
-      #fff 100%
-    );
-    background-repeat: no-repeat;
+    background-color: var(--color-pitch-900);
   }
 
   body {
