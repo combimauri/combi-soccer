@@ -23,10 +23,21 @@
 }
 
 @layer base {
-  /* Tint the area behind the OS status bar / top safe-area to match the header
-   * (the app shell paints slate-50 over the content itself). */
+  /* Tint the safe-area edges that peek out behind the OS chrome: green at the
+   * top (matching the header) and white at the bottom (matching the bottom nav),
+   * so each blends with whatever sits against it. The app shell paints slate-50
+   * over the content in between, hiding the gradient's midpoint. Fixed so the
+   * split maps to the viewport regardless of scroll. */
   html {
-    background-color: var(--color-pitch-900);
+    background:
+      linear-gradient(
+          to bottom,
+          var(--color-pitch-900) 0,
+          var(--color-pitch-900) 50%,
+          #fff 50%,
+          #fff 100%
+        )
+        fixed;
   }
 
   body {
