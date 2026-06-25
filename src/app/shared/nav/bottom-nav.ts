@@ -22,9 +22,15 @@ import { NavIcon } from './nav-icon';
   host: { '(document:keydown.escape)': 'closeMore()' },
   template: `
     <nav
-      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_50vh_0_50vh_#fff] lg:hidden"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Primary"
     >
+      <!-- Fills the strip Safari exposes below a fixed bar as its toolbar
+           collapses on scroll, so page content never peeks through. -->
+      <span
+        class="pointer-events-none absolute inset-x-0 top-full h-[50vh] bg-white"
+        aria-hidden="true"
+      ></span>
       <ul class="mx-auto flex max-w-md items-stretch">
         @for (item of visible; track item.path) {
           <li class="flex-1">
