@@ -69,6 +69,13 @@ export const es = {
     points: '{{ points }} pts',
     opensBefore: 'Los pronósticos abren 24 h antes del inicio',
     predictionsClosed: 'Pronósticos cerrados',
+    viewToggle: 'Elige cómo ver los partidos',
+    viewList: 'Lista',
+    viewBracket: 'Cuadro',
+    groupStage: 'Fase de grupos',
+    knockout: 'Eliminatorias',
+    bracketScrollHint: 'Desliza para seguir el cuadro →',
+    tapToPredict: 'Toca para pronosticar',
   },
   stages: {
     group_a: 'Grupo A',

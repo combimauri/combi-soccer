@@ -124,6 +124,21 @@ export class MatchService {
     }
   }
 
+  /** Every match with teams, as view models — for the bracket (not paginated). */
+  async getAll(): Promise<MatchView[]> {
+    const now = this.now();
+    const { data, error } = await this.sb
+      .from('matches')
+      .select(SELECT)
+      .order('stage')
+      .order('start_time');
+    if (error) throw error;
+    return ((data ?? []) as unknown as MatchWithTeams[]).map((row) => ({
+      ...row,
+      predictionState: derivePredictionState(row, now),
+    }));
+  }
+
   /** Fetch a single match (with teams) for the detail page. */
   async getMatch(id: number): Promise<MatchView | null> {
     const { data, error } = await this.sb

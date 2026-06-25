@@ -69,6 +69,13 @@ export const en = {
     points: '{{ points }} pts',
     opensBefore: 'Predictions open 24 h before kickoff',
     predictionsClosed: 'Predictions closed',
+    viewToggle: 'Choose how to view the matches',
+    viewList: 'List',
+    viewBracket: 'Bracket',
+    groupStage: 'Group stage',
+    knockout: 'Knockout',
+    bracketScrollHint: 'Swipe across to follow the bracket →',
+    tapToPredict: 'Tap to predict',
   },
   stages: {
     group_a: 'Group A',
