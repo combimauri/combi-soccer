@@ -22,7 +22,7 @@ import { NavIcon } from './nav-icon';
   host: { '(document:keydown.escape)': 'closeMore()' },
   template: `
     <nav
-      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_60vh_0_0_#fff] lg:hidden"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_50vh_0_50vh_#fff] lg:hidden"
       aria-label="Primary"
     >
       <ul class="mx-auto flex max-w-md items-stretch">
