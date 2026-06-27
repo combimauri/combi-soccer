@@ -57,6 +57,13 @@ export function derivePredictionState(match: MatchRow, now: number): PredictionS
     return 'finished';
   }
 
+  // A TBD fixture (a knockout slot whose teams aren't decided yet) can't be
+  // predicted — there's nothing to bet on. Treat it as not-yet-open regardless
+  // of its placeholder kickoff time. Mirrors the team-null guard in SQL is_betting_open().
+  if (match.home_team_id === null || match.away_team_id === null) {
+    return 'upcoming';
+  }
+
   const start = new Date(match.start_time).getTime();
   const opensAt = start - PREDICTION_OPENS_BEFORE_START_MS;
   const closesAt = start - PREDICTION_CLOSES_BEFORE_START_MS;
