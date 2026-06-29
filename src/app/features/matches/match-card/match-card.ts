@@ -79,6 +79,12 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         </div>
       </div>
 
+      @if (hasPenalties()) {
+        <p class="mt-1 text-center text-xs font-medium text-slate-500">
+          {{ 'matchDetail.penalties' | transloco }}: {{ match().home_penalties }}–{{ match().away_penalties }}
+        </p>
+      }
+
       @if (match().status === 'live') {
         <p class="mt-2 text-center text-xs font-semibold text-red-700" aria-live="polite">
           {{ livePhaseKey() | transloco }}@if (showMinute()) { · {{ match().minute }}'}
@@ -111,6 +117,11 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-1.5 text-center text-sm text-emerald-800">
           {{ 'matches.yourPrediction' | transloco }}:
           <span class="font-bold tabular-nums">{{ b.predicted_home_score }}–{{ b.predicted_away_score }}</span>
+          @if (advancerPickCode(b); as code) {
+            <span class="ms-1 text-xs text-emerald-700/80">
+              · {{ 'matches.advances' | transloco: { team: 'countries.' + code | transloco } }}
+            </span>
+          }
           @if (b.points_awarded !== null) {
             <span class="ms-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-xs font-bold text-amber-700">
               <svg viewBox="0 0 24 24" class="h-3 w-3" fill="currentColor" aria-hidden="true">
@@ -157,9 +168,22 @@ export class MatchCard {
     () => this.match().home_score !== null && this.match().away_score !== null,
   );
 
+  protected readonly hasPenalties = computed(
+    () =>
+      this.match().home_penalties !== null &&
+      this.match().away_penalties !== null,
+  );
+
   protected readonly goals = computed(
     () => (this.match().goals as unknown as MatchGoal[] | null) ?? [],
   );
+
+  /** Country code of the team the user picked to advance, or null (group bets). */
+  protected advancerPickCode(prediction: Prediction): string | null {
+    if (prediction.predicted_advancer === 'home') return this.match().home?.code ?? null;
+    if (prediction.predicted_advancer === 'away') return this.match().away?.code ?? null;
+    return null;
+  }
 
   /** Translation key for the current live period (1st/2nd half, ET, etc.). */
   protected readonly livePhaseKey = computed(() => {

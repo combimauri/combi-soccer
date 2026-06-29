@@ -35,10 +35,16 @@ import { TranslocoPipe } from '@jsverse/transloco';
                 <span class="font-display rounded-full bg-amber-100 px-2.5 py-0.5 text-base font-bold text-amber-700 tabular-nums">{{ 'howto.scoreExactPts' | transloco }}</span>
               </td>
             </tr>
-            <tr>
+            <tr class="border-b border-slate-100">
               <td class="px-4 py-3 text-slate-700">{{ 'howto.scorePartial' | transloco }}</td>
               <td class="px-4 py-3 text-right">
                 <span class="font-display rounded-full bg-slate-100 px-2.5 py-0.5 text-base font-bold text-slate-700 tabular-nums">+1</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 text-slate-700">{{ 'howto.scoreAdvancer' | transloco }}</td>
+              <td class="px-4 py-3 text-right">
+                <span class="font-display rounded-full bg-emerald-100 px-2.5 py-0.5 text-base font-bold text-emerald-700 tabular-nums">+3</span>
               </td>
             </tr>
           </tbody>

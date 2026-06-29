@@ -21,6 +21,7 @@ export type Database = {
           match_id: number
           placed_at: string
           points_awarded: number | null
+          predicted_advancer: Database["public"]["Enums"]["bet_outcome"] | null
           predicted_away_score: number
           predicted_home_score: number
           predicted_outcome: Database["public"]["Enums"]["bet_outcome"] | null
@@ -33,6 +34,7 @@ export type Database = {
           match_id: number
           placed_at?: string
           points_awarded?: number | null
+          predicted_advancer?: Database["public"]["Enums"]["bet_outcome"] | null
           predicted_away_score: number
           predicted_home_score: number
           predicted_outcome?: Database["public"]["Enums"]["bet_outcome"] | null
@@ -45,6 +47,7 @@ export type Database = {
           match_id?: number
           placed_at?: string
           points_awarded?: number | null
+          predicted_advancer?: Database["public"]["Enums"]["bet_outcome"] | null
           predicted_away_score?: number
           predicted_home_score?: number
           predicted_outcome?: Database["public"]["Enums"]["bet_outcome"] | null
@@ -102,11 +105,14 @@ export type Database = {
       }
       matches: {
         Row: {
+          advancer: Database["public"]["Enums"]["bet_outcome"] | null
+          away_penalties: number | null
           away_score: number | null
           away_team_id: number | null
           created_at: string
           estimated_end_time: string | null
           goals: Json | null
+          home_penalties: number | null
           home_score: number | null
           home_team_id: number | null
           id: number
@@ -119,11 +125,14 @@ export type Database = {
           status: Database["public"]["Enums"]["match_status"]
         }
         Insert: {
+          advancer?: Database["public"]["Enums"]["bet_outcome"] | null
+          away_penalties?: number | null
           away_score?: number | null
           away_team_id?: number | null
           created_at?: string
           estimated_end_time?: string | null
           goals?: Json | null
+          home_penalties?: number | null
           home_score?: number | null
           home_team_id?: number | null
           id?: never
@@ -136,11 +145,14 @@ export type Database = {
           status?: Database["public"]["Enums"]["match_status"]
         }
         Update: {
+          advancer?: Database["public"]["Enums"]["bet_outcome"] | null
+          away_penalties?: number | null
           away_score?: number | null
           away_team_id?: number | null
           created_at?: string
           estimated_end_time?: string | null
           goals?: Json | null
+          home_penalties?: number | null
           home_score?: number | null
           home_team_id?: number | null
           id?: never
@@ -250,6 +262,10 @@ export type Database = {
     Functions: {
       is_betting_open: { Args: { p_match_id: number }; Returns: boolean }
       refresh_leaderboard_for_match: {
+        Args: { p_match_id: number }
+        Returns: undefined
+      }
+      score_bets_for_match: {
         Args: { p_match_id: number }
         Returns: undefined
       }

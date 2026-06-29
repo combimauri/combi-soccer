@@ -17,7 +17,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { MatchView } from '../../../core/models/models';
+import { Advancer, MatchView, isKnockoutStage } from '../../../core/models/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import {
@@ -150,6 +150,47 @@ import {
             </span>
           </p>
 
+          @if (needsAdvancerPick()) {
+            <fieldset class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3">
+              <legend class="px-1 text-sm font-semibold text-amber-900">
+                {{ 'prediction.advancerTitle' | transloco }}
+              </legend>
+              <p class="mb-2 px-1 text-xs text-amber-800/90">
+                {{ 'prediction.advancerHint' | transloco }}
+              </p>
+              <div class="grid grid-cols-2 gap-2" role="radiogroup">
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="advancer() === 'home'"
+                  (click)="setAdvancer('home')"
+                  class="cursor-pointer truncate rounded-lg border px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  [class.border-amber-500]="advancer() === 'home'"
+                  [class.bg-amber-500]="advancer() === 'home'"
+                  [class.text-white]="advancer() === 'home'"
+                  [class.border-amber-300]="advancer() !== 'home'"
+                  [class.text-amber-900]="advancer() !== 'home'"
+                >
+                  {{ 'countries.' + m.home?.code | transloco }}
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="advancer() === 'away'"
+                  (click)="setAdvancer('away')"
+                  class="cursor-pointer truncate rounded-lg border px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  [class.border-amber-500]="advancer() === 'away'"
+                  [class.bg-amber-500]="advancer() === 'away'"
+                  [class.text-white]="advancer() === 'away'"
+                  [class.border-amber-300]="advancer() !== 'away'"
+                  [class.text-amber-900]="advancer() !== 'away'"
+                >
+                  {{ 'countries.' + m.away?.code | transloco }}
+                </button>
+              </div>
+            </fieldset>
+          }
+
           @if (errorKey(); as e) {
             <p
               role="alert"
@@ -169,7 +210,7 @@ import {
             </button>
             <button
               type="submit"
-              [disabled]="form.invalid || saving()"
+              [disabled]="form.invalid || saving() || (needsAdvancerPick() && !advancer())"
               class="inline-flex cursor-pointer items-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
             >
               @if (saving()) {
@@ -202,6 +243,8 @@ export class PredictionDialog {
   protected readonly match = signal<MatchView | null>(null);
   protected readonly errorKey = signal<string | null>(null);
   protected readonly saving = signal(false);
+  /** Which team the user thinks advances on penalties (knockout draws only). */
+  protected readonly advancer = signal<Advancer | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
     home: [0, [Validators.required, Validators.min(0), Validators.max(30)]],
@@ -225,6 +268,16 @@ export class PredictionDialog {
       : (m?.away?.code ?? '');
   });
 
+  /** A knockout fixture can't end level — a drawn prediction needs a shoot-out pick. */
+  protected readonly isKnockout = computed(() => {
+    const m = this.match();
+    return m ? isKnockoutStage(m.stage) : false;
+  });
+
+  protected readonly needsAdvancerPick = computed(
+    () => this.isKnockout() && this.outcome() === 'draw',
+  );
+
   /** Opens the dialog, gating on auth + username first. */
   async open(match: MatchView): Promise<void> {
     if (!this.auth.isAuthenticated()) {
@@ -243,8 +296,19 @@ export class PredictionDialog {
       home: existing?.predicted_home_score ?? 0,
       away: existing?.predicted_away_score ?? 0,
     });
+    this.advancer.set(
+      existing?.predicted_advancer === 'home' ||
+        existing?.predicted_advancer === 'away'
+        ? existing.predicted_advancer
+        : null,
+    );
     this.match.set(match);
     this.dlg().nativeElement.showModal();
+  }
+
+  /** Choose which team advances on penalties. */
+  protected setAdvancer(side: Advancer): void {
+    this.advancer.set(side);
   }
 
   /** Step a score field via the +/- buttons, clamped to the 0–30 range. */
@@ -260,17 +324,31 @@ export class PredictionDialog {
 
   protected onClose(): void {
     this.match.set(null);
+    this.advancer.set(null);
   }
 
   protected async submit(): Promise<void> {
     const m = this.match();
     if (!m || this.form.invalid) return;
+    if (this.needsAdvancerPick() && !this.advancer()) {
+      this.errorKey.set('prediction.advancerRequired');
+      return;
+    }
+
+    // For a knockout the advancer is the predicted winner, or the user's
+    // shoot-out pick when the prediction is a draw. Group matches store none.
+    const outcome = this.outcome();
+    const advancer: Advancer | null = this.isKnockout()
+      ? outcome === 'draw'
+        ? this.advancer()
+        : outcome
+      : null;
 
     this.saving.set(true);
     this.errorKey.set(null);
     try {
       const { home, away } = this.form.getRawValue();
-      await this.predictions.placeOrUpdate(m.id, home, away);
+      await this.predictions.placeOrUpdate(m.id, home, away, advancer);
       this.saved.emit();
       this.close();
     } catch (err) {

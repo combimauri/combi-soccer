@@ -1,7 +1,7 @@
 import { Injectable, effect, inject, signal } from '@angular/core';
 
 import { SUPABASE_CLIENT } from '../supabase/supabase';
-import { Prediction, MatchWinnerEntry } from '../models/models';
+import { Advancer, Prediction, MatchWinnerEntry } from '../models/models';
 import { AuthService } from './auth.service';
 
 /** Thrown when the DB rejects a prediction because its window is closed (RLS). */
@@ -69,6 +69,7 @@ export class PredictionService {
     matchId: number,
     homeScore: number,
     awayScore: number,
+    advancer: Advancer | null = null,
   ): Promise<Prediction> {
     const uid = this.auth.user()?.id;
     if (!uid) throw new Error('You must be signed in to make a prediction.');
@@ -81,6 +82,7 @@ export class PredictionService {
           match_id: matchId,
           predicted_home_score: homeScore,
           predicted_away_score: awayScore,
+          predicted_advancer: advancer,
         },
         { onConflict: 'user_id,match_id' },
       )

@@ -77,6 +77,15 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
             </span>
           </div>
         </div>
+
+        @if (hasPenalties()) {
+          <p class="mt-3 text-center text-sm font-medium text-slate-600">
+            {{ 'matchDetail.penalties' | transloco }}: {{ m.home_penalties }}–{{ m.away_penalties }}
+            @if (advancerCode(); as code) {
+              · {{ 'matches.advances' | transloco: { team: 'countries.' + code | transloco } }}
+            }
+          </p>
+        }
       </article>
 
       @if (goals().length) {
@@ -194,6 +203,21 @@ export class MatchDetail implements OnInit {
       this.match()?.home_score !== null &&
       this.match()?.away_score !== null,
   );
+
+  protected readonly hasPenalties = computed(
+    () =>
+      this.match()?.home_penalties !== null &&
+      this.match()?.away_penalties !== null,
+  );
+
+  /** Country code of the side that advanced (penalty winner, else regulation). */
+  protected readonly advancerCode = computed(() => {
+    const m = this.match();
+    if (!m) return null;
+    if (m.advancer === 'home') return m.home?.code ?? null;
+    if (m.advancer === 'away') return m.away?.code ?? null;
+    return null;
+  });
 
   protected readonly goals = computed(() => {
     const m = this.match();

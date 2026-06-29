@@ -62,6 +62,9 @@ import { Prediction, MatchView } from '../../../core/models/models';
           </span>
           <span class="font-display text-sm font-bold tabular-nums text-slate-900">
             {{ hasScore() ? match().home_score : '' }}
+            @if (hasPenalties()) {
+              <span class="ms-0.5 align-super text-[9px] font-semibold text-slate-400">({{ match().home_penalties }})</span>
+            }
           </span>
         </div>
         <div class="flex items-center justify-between gap-2">
@@ -75,6 +78,9 @@ import { Prediction, MatchView } from '../../../core/models/models';
           </span>
           <span class="font-display text-sm font-bold tabular-nums text-slate-900">
             {{ hasScore() ? match().away_score : '' }}
+            @if (hasPenalties()) {
+              <span class="ms-0.5 align-super text-[9px] font-semibold text-slate-400">({{ match().away_penalties }})</span>
+            }
           </span>
         </div>
       </div>
@@ -106,6 +112,11 @@ export class BracketMatch {
   protected readonly open = computed(() => this.match().predictionState === 'open');
   protected readonly hasScore = computed(
     () => this.match().home_score !== null && this.match().away_score !== null,
+  );
+  protected readonly hasPenalties = computed(
+    () =>
+      this.match().home_penalties !== null &&
+      this.match().away_penalties !== null,
   );
   protected readonly homeKey = computed(() =>
     this.match().home ? 'countries.' + this.match().home!.code : 'common.tbd',

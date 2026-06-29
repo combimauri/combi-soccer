@@ -7,8 +7,25 @@ export type MatchRow = Tables<'matches'>;
 export type LeaderboardRow = Tables<'leaderboard'>;
 
 export type PredictionOutcome = 'home' | 'draw' | 'away';
+/** Which side advances from a knockout tie — never a draw. */
+export type Advancer = 'home' | 'away';
 export type MatchStage = MatchRow['stage'];
 export type MatchStatus = MatchRow['status'];
+
+/** Knockout stages — the only ones that can be decided on penalties. */
+export const KNOCKOUT_STAGES: ReadonlySet<MatchStage> = new Set([
+  'round_of_32',
+  'round_of_16',
+  'quarter_final',
+  'semi_final',
+  'third_place',
+  'final',
+]);
+
+/** True when a match is a knockout fixture (so a tie goes to penalties). */
+export function isKnockoutStage(stage: MatchStage): boolean {
+  return KNOCKOUT_STAGES.has(stage);
+}
 
 /** Lifecycle of the prediction window for a single match. */
 export type PredictionState = 'upcoming' | 'open' | 'closed' | 'finished';
